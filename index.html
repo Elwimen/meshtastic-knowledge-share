@@ -1,0 +1,1014 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meshtastic — Off-Grid Communication via LoRa Mesh</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css" id="theme">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+  <link rel="stylesheet" href="presentation.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ===================== SLIDE 1: TITLE ===================== -->
+<section class="center">
+  <div class="logo-title">
+    <img src="static/img/logo.svg" alt="Meshtastic logo" onerror="this.style.display='none'">
+    <h1 style="margin:0">Meshtastic</h1>
+  </div>
+  <h3 style="color:#aaa; margin-top:0.5em" data-i18n="slide1_subtitle">Off-Grid Communication via LoRa Mesh Networks</h3>
+  <br>
+  <p class="dim" data-i18n="slide1_event">EPAM Knowledge Sharing &middot; 2026</p>
+</section>
+
+<!-- ===================== SLIDE 2: AGENDA ===================== -->
+<section>
+  <h2 data-i18n="slide2_heading">Agenda</h2>
+  <ol style="font-size:0.9em; line-height:2">
+    <li data-i18n="slide2_item1">The Problem &mdash; why off-grid communication matters</li>
+    <li data-i18n="slide2_item2">What is Meshtastic?</li>
+    <li data-i18n="slide2_item3">LoRa Technology primer</li>
+    <li data-i18n="slide2_item4">How mesh networking works</li>
+    <li data-i18n="slide2_item5">Protocol architecture &amp; routing</li>
+    <li data-i18n="slide2_item6">Encryption &amp; security</li>
+    <li data-i18n="slide2_item7">Hardware ecosystem</li>
+    <li data-i18n="slide2_item8">Software ecosystem &mdash; firmware, apps, web</li>
+    <li data-i18n="slide2_item9">Use cases &amp; range records</li>
+    <li data-i18n="slide2_item10">Getting started &amp; resources</li>
+  </ol>
+</section>
+
+<!-- ===================== SLIDE 3: THE PROBLEM ===================== -->
+<section>
+  <h2 data-i18n="slide3_heading">The Problem</h2>
+  <div class="big-quote" data-i18n="slide3_quote">
+    What happens when cellular towers go down, the internet is unreachable, or you're simply off the grid?
+  </div>
+  <br>
+  <div class="two-col">
+    <div>
+      <h3 data-i18n="slide3_col1_heading">Scenarios</h3>
+      <ul style="font-size:0.85em">
+        <li data-i18n="slide3_scenario1">Natural disasters (floods, earthquakes)</li>
+        <li data-i18n="slide3_scenario2">Remote hiking / mountaineering</li>
+        <li data-i18n="slide3_scenario3">Rural areas with no coverage</li>
+        <li data-i18n="slide3_scenario4">Events with overloaded networks</li>
+        <li data-i18n="slide3_scenario5">War zones &amp; conflict areas</li>
+      </ul>
+    </div>
+    <div>
+      <h3 data-i18n="slide3_col2_heading">Requirements</h3>
+      <ul style="font-size:0.85em">
+        <li data-i18n="slide3_req1">No infrastructure dependency</li>
+        <li data-i18n="slide3_req2">Long range</li>
+        <li data-i18n="slide3_req3">Low power / long battery life</li>
+        <li data-i18n="slide3_req4">Encrypted</li>
+        <li data-i18n="slide3_req5">Affordable</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SLIDE 4: WHAT IS MESHTASTIC ===================== -->
+<section>
+  <h2 data-i18n="slide4_heading">What is Meshtastic?</h2>
+  <br>
+  <ul style="font-size:0.9em; line-height:1.8">
+    <li data-i18n="slide4_item1"><span class="highlight">Open-source</span> project &mdash; 100% community-driven</li>
+    <li data-i18n="slide4_item2">Turns <span class="highlight">inexpensive LoRa radios</span> (~$20-50) into a mesh network</li>
+    <li data-i18n="slide4_item3">Long-range, off-grid <span class="highlight">text messaging</span> &amp; <span class="highlight">GPS location sharing</span></li>
+    <li data-i18n="slide4_item4">No SIM card, no subscription, no internet required</li>
+    <li data-i18n="slide4_item5">Decentralized &mdash; every node is a router</li>
+    <li data-i18n="slide4_item6">End-to-end encrypted communication</li>
+    <li data-i18n="slide4_item7">Works with companion apps on <span class="highlight">Android, iOS, Web, and CLI</span></li>
+  </ul>
+  <br>
+  <p class="dim" data-i18n="slide4_note">Project started in 2020 &mdash; active development with thousands of contributors</p>
+</section>
+
+<!-- ===================== SLIDE 5: LORA TECHNOLOGY ===================== -->
+<section>
+  <h2 data-i18n="slide5_heading">LoRa Technology</h2>
+  <div class="two-col">
+    <div>
+      <h3 data-i18n="slide5_col1_heading">What is LoRa?</h3>
+      <ul style="font-size:0.8em">
+        <li data-i18n="slide5_lora1"><span class="highlight">Lo</span>ng <span class="highlight">Ra</span>nge radio modulation technique</li>
+        <li data-i18n="slide5_lora2">Developed by Semtech (patented chirp spread spectrum)</li>
+        <li data-i18n="slide5_lora3">Sub-GHz ISM bands (license-free)</li>
+        <li data-i18n="slide5_lora4">Extreme range vs. WiFi/Bluetooth</li>
+        <li data-i18n="slide5_lora5">Very low power consumption</li>
+        <li data-i18n="slide5_lora6">Trade-off: <span class="highlight">low data rate</span> (~0.3 &ndash; 22 kbps)</li>
+      </ul>
+    </div>
+    <div>
+      <h3 data-i18n="slide5_col2_heading">Key Parameters</h3>
+      <ul style="font-size:0.8em">
+        <li data-i18n="slide5_sf"><span class="highlight">Spreading Factor (SF)</span> &mdash; 7-12<br>
+          <span class="dim">Higher = longer range, slower speed</span></li>
+        <li data-i18n="slide5_bw"><span class="highlight">Bandwidth</span> &mdash; 125-500 kHz<br>
+          <span class="dim">Wider = faster but less range</span></li>
+        <li data-i18n="slide5_cr"><span class="highlight">Coding Rate</span> &mdash; 4/5 to 4/8<br>
+          <span class="dim">Higher = more error correction</span></li>
+        <li data-i18n="slide5_tx"><span class="highlight">TX Power</span> &mdash; up to +30 dBm<br>
+          <span class="dim">Region-dependent limits</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SLIDE 6: LORA vs OTHERS ===================== -->
+<section>
+  <h2 data-i18n="slide6_heading">LoRa vs Other Wireless Technologies</h2>
+  <br>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th data-i18n="slide6_th_tech">Technology</th>
+        <th data-i18n="slide6_th_range">Range</th>
+        <th data-i18n="slide6_th_data">Data Rate</th>
+        <th data-i18n="slide6_th_power">Power</th>
+        <th data-i18n="slide6_th_infra">Infrastructure</th>
+        <th data-i18n="slide6_th_license">License</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>LoRa</strong></td>
+        <td class="highlight">10-200+ km</td>
+        <td>0.3-22 kbps</td>
+        <td data-i18n="slide6_lora_power">Very Low</td>
+        <td data-i18n="slide6_lora_infra">None</td>
+        <td data-i18n="slide6_lora_license">ISM (free)</td>
+      </tr>
+      <tr>
+        <td>WiFi</td>
+        <td>~100 m</td>
+        <td>1+ Gbps</td>
+        <td data-i18n="slide6_wifi_power">High</td>
+        <td data-i18n="slide6_wifi_infra">AP required</td>
+        <td data-i18n="slide6_wifi_license">ISM (free)</td>
+      </tr>
+      <tr>
+        <td>Bluetooth</td>
+        <td>~10-100 m</td>
+        <td>1-3 Mbps</td>
+        <td data-i18n="slide6_bt_power">Low</td>
+        <td data-i18n="slide6_bt_infra">None</td>
+        <td data-i18n="slide6_bt_license">ISM (free)</td>
+      </tr>
+      <tr>
+        <td data-i18n="slide6_cell_name">Cellular (4G)</td>
+        <td>~10 km</td>
+        <td>100+ Mbps</td>
+        <td data-i18n="slide6_cell_power">Medium</td>
+        <td data-i18n="slide6_cell_infra">Towers + SIM</td>
+        <td data-i18n="slide6_cell_license">Licensed</td>
+      </tr>
+      <tr>
+        <td data-i18n="slide6_sat_name">Satellite</td>
+        <td data-i18n="slide6_sat_range">Global</td>
+        <td data-i18n="slide6_sat_data">Variable</td>
+        <td data-i18n="slide6_sat_power">High</td>
+        <td data-i18n="slide6_sat_infra">Constellation</td>
+        <td data-i18n="slide6_sat_license">Licensed</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <br>
+  <p class="dim" style="text-align:center" data-i18n="slide6_note">LoRa fills a unique niche: extreme range + zero infrastructure + license-free</p>
+</section>
+
+<!-- ===================== SLIDE 7: FREQUENCY BANDS ===================== -->
+<section>
+  <h2 data-i18n="slide7_heading">Frequency Bands by Region</h2>
+  <br>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th data-i18n="slide7_th_region">Region</th>
+        <th data-i18n="slide7_th_freq">Frequency</th>
+        <th data-i18n="slide7_th_power">Max TX Power</th>
+        <th data-i18n="slide7_th_notes">Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Europe (EU_868)</td><td>869.40 &ndash; 869.65 MHz</td><td>+27 dBm (500 mW)</td><td data-i18n="slide7_eu868_notes">Most popular EU band</td></tr>
+      <tr><td>Europe (EU_433)</td><td>433 &ndash; 434 MHz</td><td>+10 dBm (10 mW)</td><td data-i18n="slide7_eu433_notes">Lower power limit</td></tr>
+      <tr><td data-i18n="slide7_na_name">North America</td><td>902 &ndash; 928 MHz</td><td>+30 dBm (1 W)</td><td data-i18n="slide7_na_notes">104 frequency slots</td></tr>
+      <tr><td data-i18n="slide7_au_name">Australia/NZ</td><td>915 &ndash; 928 MHz</td><td>+30 dBm</td><td data-i18n="slide7_au_notes">Similar to US</td></tr>
+      <tr><td>Japan</td><td>920.8 &ndash; 927.8 MHz</td><td>+16 dBm</td><td data-i18n="slide7_jp_notes">LBT required</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <br>
+  <p style="font-size:0.8em" data-i18n="slide7_note">All ISM bands &mdash; no license required for Meshtastic operation</p>
+</section>
+
+<!-- ===================== SLIDE 8: HOW MESH WORKS ===================== -->
+<section>
+  <h2 data-i18n="slide8_heading">How Mesh Networking Works</h2>
+  <div class="svg-diagram">
+    <svg viewBox="0 0 750 320" preserveAspectRatio="xMidYMid meet">
+      <!-- Nodes -->
+      <circle cx="80" cy="160" r="30" fill="none" stroke="#67ea94" stroke-width="2"/>
+      <text x="80" y="165" text-anchor="middle" fill="#67ea94" font-size="12" font-weight="bold">Phone</text>
+      <text x="80" y="210" text-anchor="middle" fill="#aaa" font-size="11">Sender</text>
+
+      <circle cx="230" cy="80" r="30" fill="none" stroke="#67ea94" stroke-width="2"/>
+      <text x="230" y="85" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Node A</text>
+
+      <circle cx="230" cy="240" r="30" fill="none" stroke="#67ea94" stroke-width="2"/>
+      <text x="230" y="245" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Node B</text>
+
+      <circle cx="400" cy="100" r="30" fill="none" stroke="#67ea94" stroke-width="2"/>
+      <text x="400" y="105" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Node C</text>
+
+      <circle cx="400" cy="220" r="30" fill="none" stroke="#67ea94" stroke-width="2"/>
+      <text x="400" y="225" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Node D</text>
+
+      <circle cx="560" cy="160" r="30" fill="none" stroke="#67ea94" stroke-width="2"/>
+      <text x="560" y="165" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Node E</text>
+
+      <circle cx="700" cy="160" r="30" fill="none" stroke="#e94560" stroke-width="2"/>
+      <text x="700" y="165" text-anchor="middle" fill="#e94560" font-size="12" font-weight="bold">Target</text>
+      <text x="700" y="210" text-anchor="middle" fill="#aaa" font-size="11">Receiver</text>
+
+      <!-- Links -->
+      <line x1="110" y1="145" x2="200" y2="95" stroke="#67ea94" stroke-width="1" opacity="0.4"/>
+      <line x1="110" y1="175" x2="200" y2="225" stroke="#67ea94" stroke-width="1" opacity="0.4"/>
+      <line x1="260" y1="80" x2="370" y2="100" stroke="#67ea94" stroke-width="1" opacity="0.4"/>
+      <line x1="260" y1="240" x2="370" y2="220" stroke="#67ea94" stroke-width="1" opacity="0.4"/>
+      <line x1="230" y1="110" x2="230" y2="210" stroke="#67ea94" stroke-width="1" opacity="0.2"/>
+      <line x1="400" y1="130" x2="400" y2="190" stroke="#67ea94" stroke-width="1" opacity="0.2"/>
+      <line x1="430" y1="105" x2="530" y2="150" stroke="#67ea94" stroke-width="1" opacity="0.4"/>
+      <line x1="430" y1="215" x2="530" y2="165" stroke="#67ea94" stroke-width="1" opacity="0.4"/>
+      <line x1="590" y1="160" x2="670" y2="160" stroke="#e94560" stroke-width="1" opacity="0.6"/>
+
+      <!-- Hop labels -->
+      <text x="155" y="105" fill="#67ea94" font-size="10">hop 1</text>
+      <text x="315" y="80" fill="#67ea94" font-size="10">hop 2</text>
+      <text x="490" y="140" fill="#67ea94" font-size="10">hop 3</text>
+      <text x="620" y="148" fill="#e94560" font-size="10">hop 4</text>
+    </svg>
+  </div>
+  <ul style="font-size:0.8em">
+    <li data-i18n="slide8_bullet1">Every node rebroadcasts messages it hasn't seen before</li>
+    <li data-i18n="slide8_bullet2"><span class="highlight">Hop limit</span> decrements at each relay &mdash; prevents infinite loops</li>
+    <li data-i18n="slide8_bullet3">No dedicated routers needed &mdash; <span class="highlight">every device participates</span></li>
+  </ul>
+</section>
+
+<!-- ===================== SLIDE 9: MESSAGE FLOW ===================== -->
+<section>
+  <h2 data-i18n="slide9_heading">Message Flow &mdash; Step by Step</h2>
+  <br>
+  <div style="font-size:0.85em;">
+    <div style="display:flex; align-items:center; flex-wrap:wrap; justify-content:center; gap:0.5em; margin-bottom:1.5em">
+      <span class="tag" data-i18n="slide9_tag1">1. Compose message on app</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="tag" data-i18n="slide9_tag2">2. Send via Bluetooth/WiFi</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="tag" data-i18n="slide9_tag3">3. Radio broadcasts (LoRa)</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="tag" data-i18n="slide9_tag4">4. Neighbors rebroadcast</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="tag" data-i18n="slide9_tag5">5. Target receives &amp; decrypts</span>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <h3 data-i18n="slide9_card1_heading">Managed Flooding</h3>
+      <ul style="font-size:0.75em">
+        <li data-i18n="slide9_flood1">Before rebroadcasting, node listens briefly</li>
+        <li data-i18n="slide9_flood2">If another node already rebroadcasted &mdash; skip</li>
+        <li data-i18n="slide9_flood3">SNR-based contention: farther nodes get priority</li>
+        <li data-i18n="slide9_flood4">Router/Repeater roles have higher priority</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 data-i18n="slide9_card2_heading">Next-Hop Routing (v2.6+)</h3>
+      <ul style="font-size:0.75em">
+        <li data-i18n="slide9_nexthop1">First message uses managed flooding</li>
+        <li data-i18n="slide9_nexthop2">System tracks which node relayed the ACK</li>
+        <li data-i18n="slide9_nexthop3">Subsequent messages route via known path</li>
+        <li data-i18n="slide9_nexthop4">Falls back to flooding if route fails</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SLIDE 10: PROTOCOL ARCHITECTURE ===================== -->
+<section>
+  <h2 data-i18n="slide10_heading">Protocol Architecture</h2>
+  <br>
+  <div class="layer-stack">
+    <div class="layer" data-i18n="slide10_layer3">
+      <span class="layer-num">Layer 3</span>
+      <strong>Multi-Hop Messaging</strong>
+      <span class="dim">&mdash; Managed flooding + next-hop routing, hop limit, SNR contention</span>
+    </div>
+    <div class="layer" data-i18n="slide10_layer2">
+      <span class="layer-num">Layer 2</span>
+      <strong>Reliable Zero-Hop</strong>
+      <span class="dim">&mdash; ACKs, retransmissions (max 3 attempts), timeout logic</span>
+    </div>
+    <div class="layer" data-i18n="slide10_layer1">
+      <span class="layer-num">Layer 1</span>
+      <strong>Unreliable Zero-Hop</strong>
+      <span class="dim">&mdash; Single LoRa packet: 4B dest + 4B sender + 4B ID + flags + up to 237B payload</span>
+    </div>
+    <div class="layer" data-i18n="slide10_layer0">
+      <span class="layer-num">Layer 0</span>
+      <strong>LoRa Physical</strong>
+      <span class="dim">&mdash; Chirp spread spectrum, preamble=16, sync word=0x2B, CSMA/CA</span>
+    </div>
+  </div>
+  <br>
+  <p style="font-size:0.75em" data-i18n="slide10_proto">Serialization: <span class="highlight">Protocol Buffers</span> (protobuf) &mdash; compact binary encoding for constrained links</p>
+</section>
+
+<!-- ===================== SLIDE 11: PACKET STRUCTURE ===================== -->
+<section>
+  <h2 data-i18n="slide11_heading">Packet Structure</h2>
+  <br>
+  <div class="svg-diagram">
+    <svg viewBox="0 0 720 160" preserveAspectRatio="xMidYMid meet">
+      <!-- Header boxes -->
+      <rect x="10" y="20" width="100" height="50" rx="6" fill="rgba(103,234,148,0.15)" stroke="#67ea94" stroke-width="1.5"/>
+      <text x="60" y="42" text-anchor="middle" fill="#67ea94" font-size="11" font-weight="bold">Dest ID</text>
+      <text x="60" y="58" text-anchor="middle" fill="#888" font-size="10">4 bytes</text>
+
+      <rect x="120" y="20" width="100" height="50" rx="6" fill="rgba(103,234,148,0.15)" stroke="#67ea94" stroke-width="1.5"/>
+      <text x="170" y="42" text-anchor="middle" fill="#67ea94" font-size="11" font-weight="bold">Sender ID</text>
+      <text x="170" y="58" text-anchor="middle" fill="#888" font-size="10">4 bytes</text>
+
+      <rect x="230" y="20" width="100" height="50" rx="6" fill="rgba(103,234,148,0.15)" stroke="#67ea94" stroke-width="1.5"/>
+      <text x="280" y="42" text-anchor="middle" fill="#67ea94" font-size="11" font-weight="bold">Packet ID</text>
+      <text x="280" y="58" text-anchor="middle" fill="#888" font-size="10">4 bytes</text>
+
+      <rect x="340" y="20" width="80" height="50" rx="6" fill="rgba(103,234,148,0.15)" stroke="#67ea94" stroke-width="1.5"/>
+      <text x="380" y="42" text-anchor="middle" fill="#67ea94" font-size="11" font-weight="bold">Flags</text>
+      <text x="380" y="58" text-anchor="middle" fill="#888" font-size="10">1 byte</text>
+
+      <rect x="430" y="20" width="80" height="50" rx="6" fill="rgba(103,234,148,0.15)" stroke="#67ea94" stroke-width="1.5"/>
+      <text x="470" y="42" text-anchor="middle" fill="#67ea94" font-size="11" font-weight="bold">Ch Hash</text>
+      <text x="470" y="58" text-anchor="middle" fill="#888" font-size="10">1 byte</text>
+
+      <!-- Payload -->
+      <rect x="520" y="20" width="190" height="50" rx="6" fill="rgba(233,69,96,0.15)" stroke="#e94560" stroke-width="1.5"/>
+      <text x="615" y="42" text-anchor="middle" fill="#e94560" font-size="11" font-weight="bold">Encrypted Payload</text>
+      <text x="615" y="58" text-anchor="middle" fill="#888" font-size="10">up to 237 bytes</text>
+
+      <!-- Labels -->
+      <text x="260" y="100" text-anchor="middle" fill="#aaa" font-size="11">&#9484; Unencrypted header &mdash; enables relay without decryption &#9488;</text>
+      <line x1="10" y1="85" x2="510" y2="85" stroke="#aaa" stroke-width="0.5" stroke-dasharray="4"/>
+      <line x1="520" y1="85" x2="710" y2="85" stroke="#e94560" stroke-width="0.5" stroke-dasharray="4"/>
+      <text x="615" y="100" text-anchor="middle" fill="#e94560" font-size="11">AES256-CTR</text>
+
+      <!-- Total -->
+      <text x="360" y="140" text-anchor="middle" fill="white" font-size="13">Max packet size: <tspan fill="#67ea94" font-weight="bold">256 bytes</tspan> total</text>
+    </svg>
+  </div>
+  <br>
+  <ul style="font-size:0.8em">
+    <li data-i18n="slide11_bullet1">Headers are <span class="highlight">unencrypted</span> &mdash; any node can relay without knowing the channel key</li>
+    <li data-i18n="slide11_bullet2">Broadcast destination: <code>0xFFFFFFFF</code></li>
+    <li data-i18n="slide11_bullet3">Flags byte includes: hop limit, want-ack bit, via-MQTT bit</li>
+  </ul>
+</section>
+
+<!-- ===================== SLIDE 12: ENCRYPTION ===================== -->
+<section>
+  <h2 data-i18n="slide12_heading">Encryption &amp; Security</h2>
+  <div class="two-col">
+    <div>
+      <h3 data-i18n="slide12_col1_heading">Channel Messages</h3>
+      <ul style="font-size:0.75em">
+        <li data-i18n="slide12_ch1"><span class="highlight">AES256-CTR</span> symmetric encryption</li>
+        <li data-i18n="slide12_ch2">Pre-Shared Key (PSK) per channel</li>
+        <li data-i18n="slide12_ch3">Anyone with the key can read &amp; send</li>
+        <li data-i18n="slide12_ch4">Default key is public: <code>"AQ=="</code></li>
+        <li data-i18n="slide12_ch5">Up to 8 channels per device</li>
+      </ul>
+      <br>
+      <h3 data-i18n="slide12_dm_heading">Direct Messages (v2.5+)</h3>
+      <ul style="font-size:0.75em">
+        <li data-i18n="slide12_dm1"><span class="highlight">x25519</span> public key cryptography</li>
+        <li data-i18n="slide12_dm2">Each node has unique key pair</li>
+        <li data-i18n="slide12_dm3">Encrypted with recipient's public key</li>
+        <li data-i18n="slide12_dm4">Signed with sender's private key</li>
+        <li data-i18n="slide12_dm5">True end-to-end encryption</li>
+      </ul>
+    </div>
+    <div>
+      <h3 data-i18n="slide12_limits_heading">Honest Limitations</h3>
+      <div class="card" style="border-color: rgba(233,69,96,0.4)">
+        <ul style="font-size:0.75em; color: #ccc">
+          <li data-i18n="slide12_lim1">Not as secure as TLS 1.3 or Signal</li>
+          <li data-i18n="slide12_lim2">No Perfect Forward Secrecy (PFS)</li>
+          <li data-i18n="slide12_lim3">Channel msgs: no sender authentication</li>
+          <li data-i18n="slide12_lim4">Node IDs based on MAC (spoofable)</li>
+          <li data-i18n="slide12_lim5">x25519 is <strong>not</strong> quantum-resistant</li>
+          <li data-i18n="slide12_lim6">AES256 <strong>is</strong> quantum-resistant</li>
+        </ul>
+      </div>
+      <br>
+      <p style="font-size:0.75em; color:#aaa" data-i18n="slide12_security_note">
+        Security is practical for the use case &mdash; not designed for nation-state adversaries.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SLIDE 13: RADIO PRESETS ===================== -->
+<section>
+  <h2 data-i18n="slide13_heading">LoRa Radio Presets</h2>
+  <br>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th data-i18n="slide13_th_preset">Preset</th>
+        <th data-i18n="slide13_th_data">Data Rate</th>
+        <th>SF</th>
+        <th>BW</th>
+        <th>CR</th>
+        <th>Link Budget</th>
+        <th data-i18n="slide13_th_usecase">Use Case</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Short Turbo</td><td data-i18n="slide13_st_data">21.88 kbps</td><td>7</td><td>500 kHz</td><td>4/5</td><td>140 dB</td><td data-i18n="slide13_st_use">Dense urban</td></tr>
+      <tr><td>Short Fast</td><td data-i18n="slide13_sf_data">10.94 kbps</td><td>7</td><td>250 kHz</td><td>4/5</td><td>143 dB</td><td data-i18n="slide13_sf_use">Short range events</td></tr>
+      <tr style="background:rgba(103,234,148,0.08)"><td><strong>Long Fast</strong></td><td data-i18n="slide13_lf_data">1.07 kbps</td><td>11</td><td>250 kHz</td><td>4/5</td><td>153 dB</td><td data-i18n="slide13_lf_use"><span class="highlight">Default preset</span></td></tr>
+      <tr><td>Long Moderate</td><td data-i18n="slide13_lm_data">0.34 kbps</td><td>11</td><td>125 kHz</td><td>4/8</td><td>156 dB</td><td data-i18n="slide13_lm_use">Maximum range</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <br>
+  <p style="font-size:0.8em" data-i18n="slide13_note1">Each SF step up = <span class="highlight">2&times; airtime</span> but ~2.5 dB extra link budget (more range)</p>
+  <p class="dim" data-i18n="slide13_note2">Trade-off: range vs throughput vs number of concurrent users</p>
+</section>
+
+<!-- ===================== SLIDE 14: HARDWARE ECOSYSTEM ===================== -->
+<section>
+  <h2 data-i18n="slide14_heading">Hardware Ecosystem</h2>
+  <div class="three-col">
+    <div class="card">
+      <h3>ESP32 / ESP32-S3</h3>
+      <ul style="font-size:0.7em">
+        <li>WiFi + Bluetooth</li>
+        <li data-i18n="slide14_esp32_item2">Higher power consumption</li>
+        <li data-i18n="slide14_esp32_item3">More RAM, lower cost</li>
+        <li data-i18n="slide14_esp32_item4">Good for powered/indoor nodes</li>
+        <li>Brands: LILYGO, Heltec</li>
+      </ul>
+    </div>
+    <div class="card" style="border-color: rgba(103,234,148,0.5)">
+      <h3>nRF52840</h3>
+      <ul style="font-size:0.7em">
+        <li data-i18n="slide14_nrf_item1">Bluetooth only</li>
+        <li data-i18n="slide14_nrf_item2"><span class="highlight">Very power efficient</span></li>
+        <li data-i18n="slide14_nrf_item3">UF2 bootloader (easy flash)</li>
+        <li data-i18n="slide14_nrf_item4">Ideal for solar / battery</li>
+        <li>Brands: RAK, LILYGO T-Echo</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>RP2040</h3>
+      <ul style="font-size:0.7em">
+        <li data-i18n="slide14_rp_item1">Raspberry Pi chip</li>
+        <li data-i18n="slide14_rp_item2">Dual-core ARM</li>
+        <li data-i18n="slide14_rp_item3">Cost-effective DIY</li>
+        <li data-i18n="slide14_rp_item4">Growing support</li>
+        <li>Brands: Raspberry Pi Pico</li>
+      </ul>
+    </div>
+  </div>
+  <br>
+  <p style="font-size:0.8em" data-i18n="slide14_radio_note">Radio chips: prefer <span class="highlight">Semtech SX126x / LR11xx</span> (newer, better) over SX127x (older)</p>
+  <p style="font-size:0.8em" data-i18n="slide14_price_note">Price range: <span class="highlight">$20 &ndash; $80</span> for a complete node</p>
+</section>
+
+<!-- ===================== SLIDE 15: POPULAR DEVICES ===================== -->
+<section>
+  <h2 data-i18n="slide15_heading">Popular Devices</h2>
+  <br>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th data-i18n="slide15_th_device">Device</th>
+        <th>MCU</th>
+        <th data-i18n="slide15_th_display">Display</th>
+        <th>GPS</th>
+        <th data-i18n="slide15_th_price">Price Range</th>
+        <th data-i18n="slide15_th_notable">Notable</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>LILYGO T-Beam Supreme</td><td>ESP32-S3</td><td data-i18n="slide15_tbeam_display">No (add-on)</td><td data-i18n="slide15_tbeam_gps">Yes</td><td data-i18n="slide15_tbeam_price">~$35-45</td><td data-i18n="slide15_tbeam_notable">Great all-rounder</td></tr>
+      <tr><td>LILYGO T-Echo</td><td>nRF52840</td><td>E-Ink</td><td data-i18n="slide15_echo_gps">Yes</td><td data-i18n="slide15_echo_price">~$50-60</td><td data-i18n="slide15_echo_notable">Low power, outdoor</td></tr>
+      <tr><td>Heltec LoRa32 V3</td><td>ESP32-S3</td><td>OLED</td><td data-i18n="slide15_heltec_gps">No</td><td data-i18n="slide15_heltec_price">~$18-22</td><td data-i18n="slide15_heltec_notable">Cheapest option</td></tr>
+      <tr><td>RAK4631 Starter Kit</td><td>nRF52840</td><td>OLED</td><td data-i18n="slide15_rak_gps">Add-on</td><td data-i18n="slide15_rak_price">~$35-50</td><td data-i18n="slide15_rak_notable">Modular (WisBlock)</td></tr>
+      <tr><td>LILYGO T-Deck</td><td>ESP32-S3</td><td>LCD + KB</td><td data-i18n="slide15_tdeck_gps">Add-on</td><td data-i18n="slide15_tdeck_price">~$50-60</td><td data-i18n="slide15_tdeck_notable">Keyboard built-in</td></tr>
+      <tr><td>Seeed T1000-E Tracker</td><td>nRF52840</td><td data-i18n="slide15_seeed_display">No</td><td data-i18n="slide15_seeed_gps">Yes</td><td data-i18n="slide15_seeed_price">~$30</td><td data-i18n="slide15_seeed_notable">IP65, tiny form factor</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ===================== SLIDE 16: SOFTWARE ECOSYSTEM ===================== -->
+<section>
+  <h2 data-i18n="slide16_heading">Software Ecosystem</h2>
+  <div class="two-col">
+    <div>
+      <h3 data-i18n="slide16_firmware_heading">Firmware</h3>
+      <div class="card">
+        <ul style="font-size:0.75em">
+          <li data-i18n="slide16_fw1">Written in <span class="highlight">C++ / PlatformIO</span></li>
+          <li data-i18n="slide16_fw2">Built on FreeRTOS (ESP32) / Zephyr (nRF52)</li>
+          <li data-i18n="slide16_fw3">Protocol Buffers for serialization</li>
+          <li data-i18n="slide16_fw4">Modular architecture: radio, mesh, GPS, display, power</li>
+          <li data-i18n="slide16_fw5">OTA updates via Bluetooth or WiFi</li>
+        </ul>
+      </div>
+      <br>
+      <h3 data-i18n="slide16_cli_heading">Python CLI &amp; Library</h3>
+      <div class="card">
+        <ul style="font-size:0.75em">
+          <li><code>pip install meshtastic</code></li>
+          <li data-i18n="slide16_cli1">Configure devices, send messages</li>
+          <li data-i18n="slide16_cli2">Scriptable automation</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <h3 data-i18n="slide16_mobile_heading">Mobile Apps</h3>
+      <div class="card">
+        <ul style="font-size:0.75em">
+          <li data-i18n="slide16_mob1"><span class="highlight">Android</span> &mdash; Kotlin, Jetpack Compose</li>
+          <li data-i18n="slide16_mob2"><span class="highlight">iOS</span> &mdash; Swift, SwiftUI</li>
+          <li data-i18n="slide16_mob3">Bluetooth connection to device</li>
+          <li data-i18n="slide16_mob4">Map view, messaging, node management</li>
+        </ul>
+      </div>
+      <br>
+      <h3 data-i18n="slide16_web_heading">Web Client</h3>
+      <div class="card">
+        <ul style="font-size:0.75em">
+          <li data-i18n="slide16_web1">Built with <span class="highlight">TypeScript / React</span></li>
+          <li data-i18n="slide16_web2">Web Bluetooth &amp; Web Serial APIs</li>
+          <li data-i18n="slide16_web3">Runs entirely in the browser</li>
+          <li data-i18n="slide16_web4">Flash firmware from the web!</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SLIDE 17: REPOS OVERVIEW ===================== -->
+<section>
+  <h2 data-i18n="slide17_heading">Open-Source Repositories</h2>
+  <br>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th data-i18n="slide17_th_repo">Repository</th>
+        <th data-i18n="slide17_th_lang">Language</th>
+        <th data-i18n="slide17_th_desc">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>meshtastic/firmware</code></td>
+        <td>C++</td>
+        <td data-i18n="slide17_firmware_desc">Device firmware (ESP32, nRF52, RP2040)</td>
+      </tr>
+      <tr>
+        <td><code>meshtastic/Meshtastic-Android</code></td>
+        <td>Kotlin</td>
+        <td data-i18n="slide17_android_desc">Android companion app</td>
+      </tr>
+      <tr>
+        <td><code>meshtastic/Meshtastic-Apple</code></td>
+        <td>Swift</td>
+        <td data-i18n="slide17_apple_desc">iOS / macOS companion app</td>
+      </tr>
+      <tr>
+        <td><code>meshtastic/web</code></td>
+        <td>TypeScript</td>
+        <td data-i18n="slide17_web_desc">Web client &amp; flasher</td>
+      </tr>
+      <tr>
+        <td><code>meshtastic/python</code></td>
+        <td>Python</td>
+        <td data-i18n="slide17_python_desc">CLI tool &amp; Python API</td>
+      </tr>
+      <tr>
+        <td><code>meshtastic/protobufs</code></td>
+        <td>Protobuf</td>
+        <td data-i18n="slide17_proto_desc">Shared protocol definitions</td>
+      </tr>
+      <tr>
+        <td><code>meshtastic/meshtastic</code></td>
+        <td>MDX / React</td>
+        <td data-i18n="slide17_docs_desc">Documentation website (this repo!)</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <br>
+  <p class="dim" style="text-align:center" data-i18n="slide17_note">All repos on GitHub under the <strong>meshtastic</strong> organization</p>
+</section>
+
+<!-- ===================== SLIDE 18: MESH SCALING ===================== -->
+<section>
+  <h2 data-i18n="slide18_heading">Mesh Network Scaling</h2>
+  <div class="two-col">
+    <div>
+      <h3 data-i18n="slide18_col1_heading">Auto-Scaling Broadcast Intervals</h3>
+      <ul style="font-size:0.8em">
+        <li><span data-i18n="slide18_intervals_label">Default intervals:</span>
+          <ul>
+            <li data-i18n="slide18_telemetry">Device telemetry: <span class="highlight">30 min</span></li>
+            <li data-i18n="slide18_position">Position: <span class="highlight">15 min</span></li>
+            <li data-i18n="slide18_nodeinfo">Node info: <span class="highlight">3 hours</span></li>
+          </ul>
+        </li>
+        <li data-i18n="slide18_scale_note">When mesh exceeds <span class="highlight">40 nodes</span>, intervals auto-scale:</li>
+      </ul>
+      <br>
+      <div class="card" style="text-align:center">
+        <code style="font-size:0.8em" data-i18n="slide18_formula">interval &times; (1.0 + (nodes - 40) &times; 0.075)</code>
+      </div>
+    </div>
+    <div>
+      <h3 data-i18n="slide18_col2_heading">CSMA/CA</h3>
+      <ul style="font-size:0.8em">
+        <li data-i18n="slide18_csma1">Channel Activity Detection (CAD) before TX</li>
+        <li data-i18n="slide18_csma2">If channel busy &rarr; random backoff</li>
+        <li data-i18n="slide18_csma3">Contention window scales with utilization</li>
+      </ul>
+      <br>
+      <h3 data-i18n="slide18_limits_heading">Practical Limits</h3>
+      <ul style="font-size:0.8em">
+        <li data-i18n="slide18_lim1">Works best with <span class="highlight">&lt;100 nodes</span> per mesh</li>
+        <li data-i18n="slide18_lim2">Message delivery is best-effort</li>
+        <li data-i18n="slide18_lim3">Not designed for high-throughput data</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SLIDE 19: RANGE RECORDS ===================== -->
+<section class="center">
+  <h2 data-i18n="slide19_heading">Range Records</h2>
+  <br>
+  <div class="two-col" style="text-align:center">
+    <div class="card">
+      <div class="stat">331 km</div>
+      <div class="stat-label" data-i18n="slide19_g2g_label">Ground-to-Ground Record</div>
+      <br>
+      <ul style="font-size:0.7em; text-align:left">
+        <li data-i18n="slide19_g2g_b1">868 MHz, SF12, BW 62.5 kHz</li>
+        <li data-i18n="slide19_g2g_b2">RAK4631 + 55cm collinear antenna</li>
+        <li data-i18n="slide19_g2g_b3">Mountain-to-mountain path</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="stat">206 km</div>
+      <div class="stat-label" data-i18n="slide19_g2a_label">Ground-to-Air Record</div>
+      <br>
+      <ul style="font-size:0.7em; text-align:left">
+        <li>915 MHz, SF11, BW 250 kHz</li>
+        <li data-i18n="slide19_g2a_b2">LILYGO T-Beams, stock antennas</li>
+        <li data-i18n="slide19_g2a_b3">One device in weather balloon</li>
+      </ul>
+    </div>
+  </div>
+  <br>
+  <p style="font-size:0.85em" data-i18n="slide19_typical">Typical real-world urban range: <span class="highlight">1&ndash;5 km</span> &nbsp;|&nbsp; Line-of-sight: <span class="highlight">10&ndash;30+ km</span></p>
+</section>
+
+<!-- ===================== SLIDE 20: USE CASES ===================== -->
+<section>
+  <h2 data-i18n="slide20_heading">Use Cases</h2>
+  <br>
+  <div class="three-col">
+    <div class="card">
+      <h3 data-i18n="slide20_card1_heading">Emergency &amp; Disaster</h3>
+      <ul style="font-size:0.7em">
+        <li data-i18n="slide20_em1">Communication when cell towers fail</li>
+        <li data-i18n="slide20_em2">Coordinate rescue operations</li>
+        <li data-i18n="slide20_em3">Share GPS locations</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 data-i18n="slide20_card2_heading">Outdoor &amp; Adventure</h3>
+      <ul style="font-size:0.7em">
+        <li data-i18n="slide20_out1">Hiking group coordination</li>
+        <li data-i18n="slide20_out2">Off-grid camping</li>
+        <li data-i18n="slide20_out3">Ski resort communication</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 data-i18n="slide20_card3_heading">Community Networks</h3>
+      <ul style="font-size:0.7em">
+        <li data-i18n="slide20_com1">Neighborhood mesh</li>
+        <li data-i18n="slide20_com2">Event communication</li>
+        <li data-i18n="slide20_com3">Farm / rural connectivity</li>
+      </ul>
+    </div>
+  </div>
+  <br>
+  <div class="three-col">
+    <div class="card">
+      <h3 data-i18n="slide20_card4_heading">IoT &amp; Sensors</h3>
+      <ul style="font-size:0.7em">
+        <li data-i18n="slide20_iot1">Environmental monitoring</li>
+        <li data-i18n="slide20_iot2">Remote telemetry</li>
+        <li data-i18n="slide20_iot3">Solar-powered sensor nodes</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 data-i18n="slide20_card5_heading">TAK Integration</h3>
+      <ul style="font-size:0.7em">
+        <li data-i18n="slide20_tak1">Team Awareness Kit (military/SAR)</li>
+        <li data-i18n="slide20_tak2">Situational awareness overlay</li>
+        <li data-i18n="slide20_tak3">Position tracking via mesh</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 data-i18n="slide20_card6_heading">Education &amp; Makers</h3>
+      <ul style="font-size:0.7em">
+        <li data-i18n="slide20_edu1">Learn radio/networking concepts</li>
+        <li data-i18n="slide20_edu2">DIY hardware projects</li>
+        <li data-i18n="slide20_edu3">Great for hackathons</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SLIDE 21: MODULES ===================== -->
+<section>
+  <h2 data-i18n="slide21_heading">Built-in Modules</h2>
+  <br>
+  <div class="two-col">
+    <div>
+      <ul style="font-size:0.82em; line-height:1.9">
+        <li data-i18n="slide21_mod1"><span class="highlight">Text Messaging</span> &mdash; channel &amp; direct</li>
+        <li data-i18n="slide21_mod2"><span class="highlight">Position Sharing</span> &mdash; GPS with smart broadcast</li>
+        <li data-i18n="slide21_mod3"><span class="highlight">Telemetry</span> &mdash; battery, voltage, temp, humidity</li>
+        <li data-i18n="slide21_mod4"><span class="highlight">Range Test</span> &mdash; automated signal testing</li>
+        <li data-i18n="slide21_mod5"><span class="highlight">Store &amp; Forward</span> &mdash; buffer msgs for offline nodes</li>
+      </ul>
+    </div>
+    <div>
+      <ul style="font-size:0.82em; line-height:1.9">
+        <li data-i18n="slide21_mod6"><span class="highlight">Serial Module</span> &mdash; UART bridge</li>
+        <li data-i18n="slide21_mod7"><span class="highlight">MQTT Gateway</span> &mdash; bridge to internet</li>
+        <li data-i18n="slide21_mod8"><span class="highlight">Neighbor Info</span> &mdash; mesh topology</li>
+        <li data-i18n="slide21_mod9"><span class="highlight">Detection Sensor</span> &mdash; motion/door alerts</li>
+        <li data-i18n="slide21_mod10"><span class="highlight">Remote Hardware</span> &mdash; GPIO control over mesh</li>
+      </ul>
+    </div>
+  </div>
+  <br>
+  <p class="dim" style="text-align:center" data-i18n="slide21_note">Modules can be enabled/disabled per device via configuration</p>
+</section>
+
+<!-- ===================== SLIDE 22: MQTT BRIDGE ===================== -->
+<section>
+  <h2 data-i18n="slide22_heading">MQTT Bridge &mdash; Connecting to the Internet</h2>
+  <br>
+  <div class="svg-diagram">
+    <svg viewBox="0 0 700 200" preserveAspectRatio="xMidYMid meet">
+      <!-- Mesh side -->
+      <rect x="20" y="60" width="180" height="80" rx="10" fill="rgba(103,234,148,0.1)" stroke="#67ea94" stroke-width="1.5"/>
+      <text x="110" y="90" text-anchor="middle" fill="#67ea94" font-size="13" font-weight="bold">LoRa Mesh</text>
+      <text x="110" y="115" text-anchor="middle" fill="#aaa" font-size="11">Nodes communicating</text>
+      <text x="110" y="130" text-anchor="middle" fill="#aaa" font-size="11">over radio</text>
+
+      <!-- Gateway -->
+      <rect x="260" y="50" width="160" height="100" rx="10" fill="rgba(233,69,96,0.1)" stroke="#e94560" stroke-width="1.5"/>
+      <text x="340" y="80" text-anchor="middle" fill="#e94560" font-size="13" font-weight="bold">MQTT Gateway</text>
+      <text x="340" y="100" text-anchor="middle" fill="#aaa" font-size="11">ESP32 node with</text>
+      <text x="340" y="115" text-anchor="middle" fill="#aaa" font-size="11">WiFi + LoRa</text>
+      <text x="340" y="130" text-anchor="middle" fill="#aaa" font-size="11">bridges both worlds</text>
+
+      <!-- Internet side -->
+      <rect x="480" y="30" width="200" height="140" rx="10" fill="rgba(15,52,96,0.3)" stroke="#0f3460" stroke-width="1.5"/>
+      <text x="580" y="60" text-anchor="middle" fill="#6ea8fe" font-size="13" font-weight="bold">Internet / MQTT</text>
+      <text x="580" y="85" text-anchor="middle" fill="#aaa" font-size="11">Home Assistant</text>
+      <text x="580" y="105" text-anchor="middle" fill="#aaa" font-size="11">Node-RED</text>
+      <text x="580" y="125" text-anchor="middle" fill="#aaa" font-size="11">Custom dashboards</text>
+      <text x="580" y="145" text-anchor="middle" fill="#aaa" font-size="11">Remote meshes</text>
+
+      <!-- Arrows -->
+      <line x1="200" y1="100" x2="258" y2="100" stroke="#67ea94" stroke-width="2" marker-end="url(#arrowGreen)"/>
+      <line x1="420" y1="100" x2="478" y2="100" stroke="#6ea8fe" stroke-width="2" marker-end="url(#arrowBlue)"/>
+      <text x="225" y="90" text-anchor="middle" fill="#67ea94" font-size="10">LoRa</text>
+      <text x="450" y="90" text-anchor="middle" fill="#6ea8fe" font-size="10">WiFi</text>
+
+      <defs>
+        <marker id="arrowGreen" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#67ea94"/></marker>
+        <marker id="arrowBlue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#6ea8fe"/></marker>
+      </defs>
+    </svg>
+  </div>
+  <br>
+  <ul style="font-size:0.8em">
+    <li data-i18n="slide22_bullet1">Bridge local LoRa mesh to the internet via MQTT protocol</li>
+    <li data-i18n="slide22_bullet2">Connect separate meshes across the world</li>
+    <li data-i18n="slide22_bullet3">Integrate with <span class="highlight">Home Assistant</span>, dashboards, alerting systems</li>
+    <li data-i18n="slide22_bullet4">Public MQTT server available: <code>mqtt.meshtastic.org</code></li>
+  </ul>
+</section>
+
+<!-- ===================== SLIDE 23: GETTING STARTED ===================== -->
+<section>
+  <h2 data-i18n="slide23_heading">Getting Started</h2>
+  <br>
+  <div style="font-size:0.85em">
+    <div style="display:flex; gap:1em; align-items:flex-start; margin-bottom:1em">
+      <span class="tag" style="min-width:2em; text-align:center">1</span>
+      <div data-i18n="slide23_step1"><strong>Get hardware</strong> &mdash; cheapest option: Heltec LoRa32 V3 (~$20). Recommended: LILYGO T-Beam or RAK Starter Kit</div>
+    </div>
+    <div style="display:flex; gap:1em; align-items:flex-start; margin-bottom:1em">
+      <span class="tag" style="min-width:2em; text-align:center">2</span>
+      <div data-i18n="slide23_step2"><strong>Flash firmware</strong> &mdash; visit <span class="highlight">flasher.meshtastic.org</span> in Chrome (uses Web Serial!)</div>
+    </div>
+    <div style="display:flex; gap:1em; align-items:flex-start; margin-bottom:1em">
+      <span class="tag" style="min-width:2em; text-align:center">3</span>
+      <div data-i18n="slide23_step3"><strong>Install companion app</strong> &mdash; Android (Play Store), iOS (App Store), or Web Client</div>
+    </div>
+    <div style="display:flex; gap:1em; align-items:flex-start; margin-bottom:1em">
+      <span class="tag" style="min-width:2em; text-align:center">4</span>
+      <div data-i18n="slide23_step4"><strong>Connect via Bluetooth</strong> &mdash; pair device with your phone</div>
+    </div>
+    <div style="display:flex; gap:1em; align-items:flex-start; margin-bottom:1em">
+      <span class="tag" style="min-width:2em; text-align:center">5</span>
+      <div data-i18n="slide23_step5"><strong>Configure</strong> &mdash; set region, change default channel key, set your name</div>
+    </div>
+    <div style="display:flex; gap:1em; align-items:flex-start;">
+      <span class="tag" style="min-width:2em; text-align:center">6</span>
+      <div data-i18n="slide23_step6"><strong>Share channel</strong> &mdash; via QR code or URL &mdash; others scan to join your mesh</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SLIDE 24: NODE ROLES ===================== -->
+<section>
+  <h2 data-i18n="slide24_heading">Device Roles</h2>
+  <br>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th data-i18n="slide24_th_role">Role</th>
+        <th data-i18n="slide24_th_behavior">Behavior</th>
+        <th data-i18n="slide24_th_bestfor">Best For</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="highlight">Client</span></td><td data-i18n="slide24_client_behavior">Default role &mdash; sends, receives, rebroadcasts</td><td data-i18n="slide24_client_best">Handheld devices</td></tr>
+      <tr><td><span class="highlight">Client Mute</span></td><td data-i18n="slide24_mute_behavior">Sends &amp; receives but does not rebroadcast</td><td data-i18n="slide24_mute_best">Passive listeners</td></tr>
+      <tr><td><span class="highlight">Router</span></td><td data-i18n="slide24_router_behavior">Prioritized for rebroadcasting, minimal display</td><td data-i18n="slide24_router_best">Fixed relay points</td></tr>
+      <tr><td><span class="highlight">Repeater</span></td><td data-i18n="slide24_repeater_behavior">Only rebroadcasts &mdash; no local processing</td><td data-i18n="slide24_repeater_best">Remote solar relays</td></tr>
+      <tr><td><span class="highlight">Tracker</span></td><td data-i18n="slide24_tracker_behavior">Optimized for GPS position broadcasting</td><td data-i18n="slide24_tracker_best">Asset/pet tracking</td></tr>
+      <tr><td><span class="highlight">Sensor</span></td><td data-i18n="slide24_sensor_behavior">Optimized for telemetry data reporting</td><td data-i18n="slide24_sensor_best">Environmental monitoring</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ===================== SLIDE 25: WHY IT MATTERS ===================== -->
+<section>
+  <h2 data-i18n="slide25_heading">Why Meshtastic Matters</h2>
+  <br>
+  <div class="two-col">
+    <div>
+      <h3 data-i18n="slide25_users_heading">For Users</h3>
+      <ul style="font-size:0.85em">
+        <li data-i18n="slide25_usr1">Communication independence from telecom</li>
+        <li data-i18n="slide25_usr2">Privacy by design (encrypted, no accounts)</li>
+        <li data-i18n="slide25_usr3">Affordable &mdash; no subscription fees</li>
+        <li data-i18n="slide25_usr4">Works everywhere: mountains, oceans, deserts</li>
+      </ul>
+    </div>
+    <div>
+      <h3 data-i18n="slide25_eng_heading">For Engineers</h3>
+      <ul style="font-size:0.85em">
+        <li data-i18n="slide25_eng1">Fascinating distributed systems problem</li>
+        <li data-i18n="slide25_eng2">Real-world RF engineering challenges</li>
+        <li data-i18n="slide25_eng3">Cross-platform: firmware, mobile, web, CLI</li>
+        <li data-i18n="slide25_eng4">Active open-source community to contribute to</li>
+        <li data-i18n="slide25_eng5">Great learning platform for IoT &amp; mesh networking</li>
+      </ul>
+    </div>
+  </div>
+  <br>
+  <div class="big-quote" data-i18n="slide25_quote">
+    "A mesh network you can set up in 10 minutes for $20 that works without any infrastructure."
+  </div>
+</section>
+
+<!-- ===================== SLIDE 26: RESOURCES ===================== -->
+<section>
+  <h2 data-i18n="slide26_heading">Resources &amp; Links</h2>
+  <br>
+  <div class="two-col">
+    <div>
+      <h3 data-i18n="slide26_official_heading">Official</h3>
+      <ul style="font-size:0.82em; line-height:1.9">
+        <li data-i18n="slide26_off1">Website: <span class="highlight">meshtastic.org</span></li>
+        <li data-i18n="slide26_off2">Docs: <span class="highlight">meshtastic.org/docs</span></li>
+        <li data-i18n="slide26_off3">Flasher: <span class="highlight">flasher.meshtastic.org</span></li>
+        <li data-i18n="slide26_off4">GitHub: <span class="highlight">github.com/meshtastic</span></li>
+        <li data-i18n="slide26_off5">Discord: <span class="highlight">meshtastic.org/discord</span></li>
+      </ul>
+    </div>
+    <div>
+      <h3 data-i18n="slide26_community_heading">Community</h3>
+      <ul style="font-size:0.82em; line-height:1.9">
+        <li data-i18n="slide26_com1">Local mesh maps: <span class="highlight">meshmap.net</span></li>
+        <li data-i18n="slide26_com2">Reddit: <span class="highlight">r/meshtastic</span></li>
+        <li data-i18n="slide26_com3">YouTube: search "Meshtastic" for setup guides</li>
+        <li data-i18n="slide26_com4">3D printable enclosures on Thingiverse</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SLIDE 27: Q&A ===================== -->
+<section class="center">
+  <h2 data-i18n="slide27_heading">Questions?</h2>
+  <br>
+  <p style="font-size:1.2em; color:#aaa" data-i18n="slide27_thanks">Thank you!</p>
+  <br>
+  <p style="font-size:0.85em">
+    <span class="highlight">meshtastic.org</span>
+    &nbsp;&middot;&nbsp;
+    <span class="highlight">github.com/meshtastic</span>
+  </p>
+</section>
+
+</div>
+</div>
+
+<div id="lang-menu">
+  <select id="lang-select" aria-label="Select language">
+    <option value="en">&#127468;&#127463; English</option>
+    <option value="hr">&#127469;&#127479; Hrvatski</option>
+  </select>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="lang.js"></script>
+<script>
+  function applyLang(lang) {
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(function(el) {
+      var key = el.dataset.i18n;
+      var val = MESHTASTIC_LANG[key];
+      if (val && val[lang]) el.innerHTML = val[lang];
+    });
+    var t = MESHTASTIC_LANG['page_title'];
+    if (t && t[lang]) document.title = t[lang];
+    localStorage.setItem('pres_lang', lang);
+    document.getElementById('lang-select').value = lang;
+  }
+
+  document.getElementById('lang-select').addEventListener('change', function() {
+    applyLang(this.value);
+  });
+
+  var saved = localStorage.getItem('pres_lang') ||
+    (navigator.language.startsWith('hr') ? 'hr' : 'en');
+  applyLang(saved);
+
+  Reveal.initialize({
+    hash: true,
+    slideNumber: true,
+    transition: 'slide',
+    center: false,
+    width: '100%',
+    height: '100%',
+    margin: 0,
+    minScale: 1,
+    maxScale: 1,
+    plugins: [RevealHighlight]
+  });
+</script>
+</body>
+</html>
