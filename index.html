@@ -997,6 +997,7 @@
     (navigator.language.startsWith('hr') ? 'hr' : 'en');
   applyLang(saved);
 
+  var mobile = window.innerWidth < 700;
   Reveal.initialize({
     hash: true,
     slideNumber: true,
@@ -1007,6 +1008,7 @@
     margin: 0,
     minScale: 1,
     maxScale: 1,
+    view: mobile ? 'scroll' : undefined,
     plugins: [RevealHighlight]
   });
 </script>

@@ -178,6 +178,15 @@
   .reveal section {
     padding: 1vh 2vw;
   }
+  /* Override reveal.js's ~40px computed base font — scale it to the viewport */
+  .reveal {
+    font-size: clamp(12px, 4vw, 18px) !important;
+  }
+  /* Let slide content expand beyond the viewport; scroll mode handles paging */
+  .reveal .slides section {
+    height: auto !important;
+    min-height: unset !important;
+  }
 }
 
 /* Language menu */
