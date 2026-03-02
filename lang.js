@@ -541,6 +541,8 @@ const MESHTASTIC_LANG = {
   slide26_off4: { en: 'GitHub: <span class="highlight">github.com/meshtastic</span>', hr: 'GitHub: <span class="highlight">github.com/meshtastic</span>' },
   slide26_off5: { en: 'Discord: <span class="highlight">meshtastic.org/discord</span>', hr: 'Discord: <span class="highlight">meshtastic.org/discord</span>' },
   slide26_community_heading: { en: "Community", hr: "Zajednica" },
+  slide26_com0a: { en: 'Croatian community: <span class="highlight">cromesh.eu</span>', hr: 'Hrvatska zajednica: <span class="highlight">cromesh.eu</span>' },
+  slide26_com0b: { en: 'Croatian mesh map: <span class="highlight">map.cromesh.eu</span>', hr: 'Hrvatska mesh karta: <span class="highlight">map.cromesh.eu</span>' },
   slide26_com1: { en: 'Local mesh maps: <span class="highlight">meshmap.net</span>', hr: 'Lokalne mesh karte: <span class="highlight">meshmap.net</span>' },
   slide26_com2: { en: 'Reddit: <span class="highlight">r/meshtastic</span>', hr: 'Reddit: <span class="highlight">r/meshtastic</span>' },
   slide26_com3: { en: 'YouTube: search "Meshtastic" for setup guides', hr: 'YouTube: preta\u017eite "Meshtastic" za vodi\u010de' },
