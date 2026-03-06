@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meshtastic Packet Structure</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f1117;
+      --surface:   #1a1d27;
+      --border:    #2e3348;
+      --accent:    #67e8f9;   /* cyan */
+      --accent2:   #a78bfa;   /* purple */
+      --accent3:   #34d399;   /* green */
+      --accent4:   #fb923c;   /* orange */
+      --accent5:   #f472b6;   /* pink */
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --badge-bg:  #1e293b;
+      --arrow:     #475569;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      padding: 24px 16px 64px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: clamp(1.2rem, 4vw, 2rem);
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 40px;
+    }
+
+    /* ── layout spine ── */
+    .diagram {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    /* ── generic layer card ── */
+    .layer {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .layer-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .layer-header .badge {
+      background: var(--badge-bg);
+      border: 1px solid currentColor;
+      border-radius: 4px;
+      padding: 1px 7px;
+      font-size: 0.7rem;
+      opacity: 0.9;
+      white-space: nowrap;
+    }
+    .layer-body {
+      padding: 14px 16px 16px;
+      background: var(--surface);
+    }
+
+    /* ── physical layer colours ── */
+    .layer-physical .layer-header { background: #0c2233; color: var(--accent); }
+    .layer-network  .layer-header { background: #1a1433; color: var(--accent2); }
+    .layer-app      .layer-header { background: #0d2620; color: var(--accent3); }
+
+    /* ── header byte strip ── */
+    .byte-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 14px;
+    }
+    .byte-cell {
+      flex: 1 1 auto;
+      min-width: 48px;
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 6px 4px 4px;
+      background: var(--bg);
+    }
+    .byte-cell .field-name {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent);
+      display: block;
+    }
+    .byte-cell .field-size {
+      font-size: 0.65rem;
+      color: var(--muted);
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* ── flags detail ── */
+    .flags-strip {
+      display: flex;
+      gap: 3px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .flag-bit {
+      flex: 1 1 auto;
+      min-width: 80px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 5px 8px;
+      font-size: 0.72rem;
+    }
+    .flag-bit .bits { color: var(--accent4); font-weight: 700; font-family: monospace; }
+    .flag-bit .name { color: var(--text); margin-left: 4px; }
+    .flag-bit .desc { color: var(--muted); display: block; margin-top: 2px; font-size: 0.67rem; }
+
+    /* ── field table ── */
+    .field-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+    .field-table th {
+      text-align: left;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 4px 8px 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .field-table td {
+      padding: 4px 8px;
+      border-bottom: 1px solid #1e2233;
+      vertical-align: top;
+    }
+    .field-table tr:last-child td { border-bottom: none; }
+    .field-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .fname { font-family: 'Cascadia Code', 'Fira Code', monospace; color: var(--accent); }
+    .ftype { font-family: monospace; color: var(--accent2); font-size: 0.72rem; }
+    .fdesc { color: #94a3b8; }
+
+    .section-label {
+      font-size: 0.67rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      padding: 8px 8px 2px;
+      border-top: 1px solid var(--border);
+    }
+    .section-label:first-of-type { border-top: none; padding-top: 0; }
+
+    /* ── arrow connector ── */
+    .arrow-connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 4px 0;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+    .arrow-connector .arrow-line {
+      width: 2px;
+      height: 18px;
+      background: var(--arrow);
+    }
+    .arrow-connector .arrow-label {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-family: monospace;
+      font-size: 0.68rem;
+      color: var(--accent4);
+      white-space: nowrap;
+    }
+    .arrow-connector .arrow-head {
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 8px solid var(--arrow);
+    }
+
+    /* ── portnum grid ── */
+    .portnum-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .portnum-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 10px 12px;
+      font-size: 0.75rem;
+    }
+    .portnum-card .pnum {
+      font-family: monospace;
+      font-size: 0.68rem;
+      color: var(--accent4);
+      display: block;
+      margin-bottom: 2px;
+    }
+    .portnum-card .pname {
+      font-weight: 700;
+      color: var(--text);
+      display: block;
+    }
+    .portnum-card .penc {
+      color: var(--muted);
+      font-size: 0.67rem;
+      margin-top: 3px;
+      display: block;
+    }
+
+    /* ── size table ── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 860px;
+      margin: 32px auto 0;
+    }
+    @media (max-width: 560px) { .info-grid { grid-template-columns: 1fr; } }
+
+    .info-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .info-card h3 {
+      padding: 10px 14px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+    .info-table td {
+      padding: 6px 14px;
+      border-bottom: 1px solid #1e2233;
+    }
+    .info-table tr:last-child td { border-bottom: none; }
+    .info-table td:first-child { color: #94a3b8; }
+    .info-table td:last-child  { font-family: monospace; text-align: right; font-weight: 700; color: var(--accent3); }
+    .info-table td.highlight   { color: var(--accent); }
+
+    /* ── source files ── */
+    .source-list {
+      list-style: none;
+      padding: 10px 14px;
+      font-size: 0.78rem;
+    }
+    .source-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid #1e2233;
+      gap: 12px;
+    }
+    .source-list li:last-child { border-bottom: none; }
+    .source-list .concept { color: #94a3b8; flex-shrink: 0; }
+    .source-list .path {
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-align: right;
+      word-break: break-all;
+    }
+
+    /* ── encryption section ── */
+    .enc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 0;
+    }
+    @media (max-width: 500px) { .enc-grid { grid-template-columns: 1fr; } }
+    .enc-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 10px 12px;
+      font-size: 0.75rem;
+    }
+    .enc-card .enc-name { font-weight: 700; color: var(--text); display: block; margin-bottom: 4px; }
+    .enc-card .enc-row  { color: var(--muted); font-size: 0.7rem; margin-top: 2px; }
+    .enc-card .enc-val  { font-family: monospace; color: var(--accent2); }
+
+    footer {
+      text-align: center;
+      margin-top: 48px;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<h1>Meshtastic Packet Structure</h1>
+<p class="subtitle">Physical → Network → Application layer breakdown &nbsp;|&nbsp; source: firmware/protobufs/meshtastic/</p>
+
+<div class="diagram">
+
+  <!-- ══════════════════════════════════════════════════════════════
+       PHYSICAL LAYER
+  ════════════════════════════════════════════════════════════════ -->
+  <div class="layer layer-physical">
+    <div class="layer-header">
+      Physical Layer
+      <span class="badge">LoRa Radio Frame</span>
+      <span class="badge">max 255 B</span>
+    </div>
+    <div class="layer-body">
+
+      <div class="byte-strip">
+        <div class="byte-cell">
+          <span class="field-name">to</span>
+          <span class="field-size">4 B</span>
+        </div>
+        <div class="byte-cell">
+          <span class="field-name">from</span>
+          <span class="field-size">4 B</span>
+        </div>
+        <div class="byte-cell">
+          <span class="field-name">id</span>
+          <span class="field-size">4 B</span>
+        </div>
+        <div class="byte-cell">
+          <span class="field-name">flags</span>
+          <span class="field-size">1 B</span>
+        </div>
+        <div class="byte-cell">
+          <span class="field-name">channel</span>
+          <span class="field-size">1 B</span>
+        </div>
+        <div class="byte-cell">
+          <span class="field-name">next_hop</span>
+          <span class="field-size">1 B</span>
+        </div>
+        <div class="byte-cell">
+          <span class="field-name">relay_node</span>
+          <span class="field-size">1 B</span>
+        </div>
+        <div class="byte-cell" style="flex-grow:3; border-color: var(--accent2);">
+          <span class="field-name" style="color:var(--accent2);">encrypted payload</span>
+          <span class="field-size">≤ 239 B</span>
+        </div>
+      </div>
+
+      <div style="font-size:0.72rem; color:var(--muted); margin-bottom:8px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em;">
+        flags byte breakdown
+      </div>
+      <div class="flags-strip">
+        <div class="flag-bit">
+          <span class="bits">[2:0]</span><span class="name">hop_limit</span>
+          <span class="desc">remaining hops allowed (3 bits)</span>
+        </div>
+        <div class="flag-bit">
+          <span class="bits">[3]</span><span class="name">want_ack</span>
+          <span class="desc">reliable delivery requested</span>
+        </div>
+        <div class="flag-bit">
+          <span class="bits">[4]</span><span class="name">via_mqtt</span>
+          <span class="desc">passed through MQTT at some point</span>
+        </div>
+        <div class="flag-bit">
+          <span class="bits">[7:5]</span><span class="name">hop_start</span>
+          <span class="desc">original hop_limit at send time (3 bits)</span>
+        </div>
+      </div>
+
+      <table class="field-table">
+        <thead><tr>
+          <th>field</th><th>notes</th>
+        </tr></thead>
+        <tbody>
+          <tr><td class="fname">to / from</td><td class="fdesc">full 32-bit NodeNum of destination / sender</td></tr>
+          <tr><td class="fname">id</td><td class="fdesc">unique per-sender packet ID; also used as AES-CTR nonce input</td></tr>
+          <tr><td class="fname">channel</td><td class="fdesc">1-byte channel hash — hint for selecting the correct decryption key</td></tr>
+          <tr><td class="fname">next_hop</td><td class="fdesc">last byte of next-hop NodeNum for managed (non-flood) routing</td></tr>
+          <tr><td class="fname">relay_node</td><td class="fdesc">last byte of NodeNum that relayed this packet</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- arrow -->
+  <div class="arrow-connector">
+    <div class="arrow-line"></div>
+    <div class="arrow-label">AES-CTR decrypt &nbsp;|&nbsp; nonce = packet_id[8B LE] ‖ from_node[8B LE]</div>
+    <div class="arrow-line"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       NETWORK LAYER
+  ════════════════════════════════════════════════════════════════ -->
+  <div class="layer layer-network">
+    <div class="layer-header">
+      Network Layer
+      <span class="badge">MeshPacket</span>
+      <span class="badge">protobuf</span>
+    </div>
+    <div class="layer-body">
+
+      <div class="section-label">Sent over the air (header or encrypted payload)</div>
+      <table class="field-table">
+        <thead><tr><th>field</th><th>type</th><th>description</th></tr></thead>
+        <tbody>
+          <tr><td class="fname">from</td>         <td class="ftype">fixed32</td> <td class="fdesc">sender NodeNum; also AES nonce input</td></tr>
+          <tr><td class="fname">to</td>           <td class="ftype">fixed32</td> <td class="fdesc">destination NodeNum; 0xFFFFFFFF = broadcast</td></tr>
+          <tr><td class="fname">channel</td>      <td class="ftype">uint32</td>  <td class="fdesc">channel_hash on wire; channel_index in app layer</td></tr>
+          <tr><td class="fname">id</td>           <td class="ftype">fixed32</td> <td class="fdesc">unique per-sender ID; used for dedup and ACK</td></tr>
+          <tr><td class="fname">hop_limit</td>    <td class="ftype">uint32</td>  <td class="fdesc">remaining hops (3 bits in flags)</td></tr>
+          <tr><td class="fname">hop_start</td>    <td class="ftype">uint32</td>  <td class="fdesc">original hop_limit; diff = hops traveled</td></tr>
+          <tr><td class="fname">want_ack</td>     <td class="ftype">bool</td>    <td class="fdesc">request delivery acknowledgement (flag bit)</td></tr>
+          <tr><td class="fname">via_mqtt</td>     <td class="ftype">bool</td>    <td class="fdesc">set if routed through MQTT (flag bit)</td></tr>
+          <tr><td class="fname">next_hop</td>     <td class="ftype">uint32</td>  <td class="fdesc">routing hint — last byte of next-hop NodeNum</td></tr>
+          <tr><td class="fname">relay_node</td>   <td class="ftype">uint32</td>  <td class="fdesc">routing hint — last byte of relaying NodeNum</td></tr>
+          <tr><td class="fname">public_key</td>   <td class="ftype">bytes</td>   <td class="fdesc">sender's Curve25519 public key (PKC only)</td></tr>
+          <tr><td class="fname">pki_encrypted</td><td class="ftype">bool</td>    <td class="fdesc">encrypted with PKI instead of channel PSK</td></tr>
+          <tr><td class="fname">decoded</td>      <td class="ftype">Data</td>    <td class="fdesc">decrypted application payload (oneof)</td></tr>
+          <tr><td class="fname">encrypted</td>    <td class="ftype">bytes</td>   <td class="fdesc">raw ciphertext before local decrypt (oneof)</td></tr>
+        </tbody>
+      </table>
+
+      <div class="section-label" style="margin-top:10px;">Local only — never sent over radio</div>
+      <table class="field-table">
+        <thead><tr><th>field</th><th>type</th><th>description</th></tr></thead>
+        <tbody>
+          <tr><td class="fname">rx_time</td>             <td class="ftype">fixed32</td> <td class="fdesc">epoch seconds of receipt</td></tr>
+          <tr><td class="fname">rx_snr</td>              <td class="ftype">float</td>   <td class="fdesc">signal-to-noise ratio at receiver</td></tr>
+          <tr><td class="fname">rx_rssi</td>             <td class="ftype">int32</td>   <td class="fdesc">received signal strength (dBm)</td></tr>
+          <tr><td class="fname">priority</td>            <td class="ftype">Priority</td><td class="fdesc">TX queue priority: ACK=120, HIGH=100, RELIABLE=70, DEFAULT=64, BACKGROUND=10</td></tr>
+          <tr><td class="fname">tx_after</td>            <td class="ftype">uint32</td>  <td class="fdesc">earliest epoch time to transmit</td></tr>
+          <tr><td class="fname">transport_mechanism</td> <td class="ftype">enum</td>    <td class="fdesc">LORA / MQTT / MULTICAST_UDP / API / …</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- arrow -->
+  <div class="arrow-connector">
+    <div class="arrow-line"></div>
+    <div class="arrow-label">protobuf decode → Data message</div>
+    <div class="arrow-line"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       APPLICATION LAYER
+  ════════════════════════════════════════════════════════════════ -->
+  <div class="layer layer-app">
+    <div class="layer-header">
+      Application Layer
+      <span class="badge">Data</span>
+      <span class="badge">payload ≤ 233 B</span>
+    </div>
+    <div class="layer-body">
+
+      <table class="field-table">
+        <thead><tr><th>field</th><th>type</th><th>description</th></tr></thead>
+        <tbody>
+          <tr><td class="fname">portnum</td>       <td class="ftype">PortNum</td>  <td class="fdesc">identifies the application handler (routing key)</td></tr>
+          <tr><td class="fname">payload</td>       <td class="ftype">bytes</td>    <td class="fdesc">raw application bytes; format determined by portnum</td></tr>
+          <tr><td class="fname">want_response</td> <td class="ftype">bool</td>     <td class="fdesc">request receiver replies with the same type</td></tr>
+          <tr><td class="fname">dest</td>          <td class="ftype">fixed32</td>  <td class="fdesc">final destination NodeNum (multihop routing)</td></tr>
+          <tr><td class="fname">source</td>        <td class="ftype">fixed32</td>  <td class="fdesc">original sender NodeNum (multihop routing)</td></tr>
+          <tr><td class="fname">request_id</td>    <td class="ftype">fixed32</td>  <td class="fdesc">ID of packet this message replies to / reports on</td></tr>
+          <tr><td class="fname">reply_id</td>      <td class="ftype">fixed32</td>  <td class="fdesc">ID of message this is a direct reply to</td></tr>
+          <tr><td class="fname">emoji</td>         <td class="ftype">fixed32</td>  <td class="fdesc">Unicode reaction codepoint</td></tr>
+          <tr><td class="fname">bitfield</td>      <td class="ftype">uint32</td>   <td class="fdesc">extra flags; bit 0 = ok_to_mqtt</td></tr>
+        </tbody>
+      </table>
+
+      <!-- portnum grid -->
+      <div style="font-size:0.72rem; color:var(--muted); margin: 14px 0 6px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em;">
+        PortNum dispatch
+      </div>
+      <div class="portnum-grid">
+        <div class="portnum-card">
+          <span class="pnum">portnum = 1</span>
+          <span class="pname">TEXT_MESSAGE_APP</span>
+          <span class="penc">UTF-8 plaintext</span>
+        </div>
+        <div class="portnum-card">
+          <span class="pnum">portnum = 3</span>
+          <span class="pname">POSITION_APP</span>
+          <span class="penc">Position protobuf</span>
+        </div>
+        <div class="portnum-card">
+          <span class="pnum">portnum = 4</span>
+          <span class="pname">NODEINFO_APP</span>
+          <span class="penc">User protobuf</span>
+        </div>
+        <div class="portnum-card">
+          <span class="pnum">portnum = 5</span>
+          <span class="pname">ROUTING_APP</span>
+          <span class="penc">Routing protobuf (ACKs)</span>
+        </div>
+        <div class="portnum-card">
+          <span class="pnum">portnum = 6</span>
+          <span class="pname">ADMIN_APP</span>
+          <span class="penc">AdminMessage protobuf</span>
+        </div>
+        <div class="portnum-card">
+          <span class="pnum">portnum = 7</span>
+          <span class="pname">TEXT_MESSAGE_COMPRESSED</span>
+          <span class="penc">Unishox2 compressed UTF-8</span>
+        </div>
+        <div class="portnum-card">
+          <span class="pnum">portnum = 8</span>
+          <span class="pname">WAYPOINT_APP</span>
+          <span class="penc">Waypoint protobuf</span>
+        </div>
+        <div class="portnum-card">
+          <span class="pnum">portnum = 67</span>
+          <span class="pname">TELEMETRY_APP</span>
+          <span class="penc">Telemetry protobuf</span>
+        </div>
+        <div class="portnum-card">
+          <span class="pnum">portnum = 70</span>
+          <span class="pname">TRACEROUTE_APP</span>
+          <span class="penc">RouteDiscovery protobuf</span>
+        </div>
+        <div class="portnum-card">
+          <span class="pnum">portnum = 71</span>
+          <span class="pname">NEIGHBORINFO_APP</span>
+          <span class="penc">NeighborInfo protobuf</span>
+        </div>
+        <div class="portnum-card">
+          <span class="pnum">portnum = 9</span>
+          <span class="pname">AUDIO_APP</span>
+          <span class="penc">codec2 frames (2.4 GHz)</span>
+        </div>
+        <div class="portnum-card">
+          <span class="pnum">portnum = 256+</span>
+          <span class="pname">PRIVATE_APP</span>
+          <span class="penc">User-defined / private</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /diagram -->
+
+<!-- ══════════════════════════════════════════════════════════════
+     INFO CARDS
+════════════════════════════════════════════════════════════════ -->
+<div class="info-grid">
+
+  <div class="info-card">
+    <h3>Size Constraints</h3>
+    <table class="info-table">
+      <tr><td>LoRa frame</td>             <td>255 B</td></tr>
+      <tr><td>PacketHeader</td>           <td>16 B</td></tr>
+      <tr><td>Encrypted payload</td>      <td>239 B</td></tr>
+      <tr><td>PKC overhead</td>           <td>12 B</td></tr>
+      <tr><td class="highlight">Data.payload max</td><td>233 B</td></tr>
+    </table>
+  </div>
+
+  <div class="info-card">
+    <h3>Encryption</h3>
+    <div style="padding: 10px 14px;">
+      <div class="enc-grid">
+        <div class="enc-card">
+          <span class="enc-name">Channel PSK (default)</span>
+          <div class="enc-row">algo: <span class="enc-val">AES-CTR</span></div>
+          <div class="enc-row">key: <span class="enc-val">channel PSK</span></div>
+          <div class="enc-row">nonce: <span class="enc-val">id[8B LE] ‖ from[8B LE]</span></div>
+        </div>
+        <div class="enc-card">
+          <span class="enc-name">PKI / PKC</span>
+          <div class="enc-row">key exchange: <span class="enc-val">Curve25519</span></div>
+          <div class="enc-row">cipher: <span class="enc-val">AES</span></div>
+          <div class="enc-row">overhead: <span class="enc-val">12 B</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-card">
+    <h3>Routing</h3>
+    <table class="info-table">
+      <tr><td>Flood broadcast</td>       <td style="color:var(--text); font-family:monospace; font-size:0.75rem;">to = 0xFFFFFFFF</td></tr>
+      <tr><td>Hops traveled</td>         <td style="color:var(--text); font-family:monospace; font-size:0.75rem;">hop_start − hop_limit</td></tr>
+      <tr><td>Managed routing</td>       <td style="color:var(--text); font-family:monospace; font-size:0.75rem;">next_hop / relay_node</td></tr>
+      <tr><td>Reliable delivery</td>     <td style="color:var(--text); font-family:monospace; font-size:0.75rem;">want_ack + id</td></tr>
+      <tr><td>MQTT bridging flag</td>    <td style="color:var(--text); font-family:monospace; font-size:0.75rem;">via_mqtt (header bit)</td></tr>
+    </table>
+  </div>
+
+  <div class="info-card">
+    <h3>Source Files</h3>
+    <ul class="source-list">
+      <li><span class="concept">PacketHeader struct</span>  <span class="path">src/mesh/RadioInterface.h</span></li>
+      <li><span class="concept">MeshPacket / Data</span>    <span class="path">protobufs/meshtastic/mesh.proto</span></li>
+      <li><span class="concept">PortNum enum</span>          <span class="path">protobufs/meshtastic/portnums.proto</span></li>
+      <li><span class="concept">Routing / flooding</span>   <span class="path">src/mesh/Router.cpp</span></li>
+      <li><span class="concept">MQTT bridging</span>         <span class="path">src/mqtt/MQTT.cpp</span></li>
+      <li><span class="concept">Encryption</span>            <span class="path">src/CryptoEngine.cpp</span></li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  Generated from <a href="https://github.com/meshtastic/firmware">meshtastic/firmware</a> &nbsp;|&nbsp;
+  <code>protobufs/meshtastic/mesh.proto</code> &nbsp;+&nbsp; <code>src/mesh/RadioInterface.h</code>
+</footer>
+
+</body>
+</html>

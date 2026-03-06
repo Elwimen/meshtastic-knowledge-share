@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meshtastic Node Communication Sequences</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f1117;
+      --surface:   #1a1d27;
+      --surface2:  #1e2235;
+      --border:    #2e3348;
+      --accent:    #67e8f9;
+      --accent2:   #a78bfa;
+      --accent3:   #34d399;
+      --accent4:   #fb923c;
+      --accent5:   #f472b6;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --dim:       #94a3b8;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 24px 16px 64px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: clamp(1.2rem, 4vw, 1.9rem);
+      color: var(--accent);
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-bottom: 28px;
+    }
+
+    /* ── topology banner ── */
+    .topology {
+      max-width: 760px;
+      margin: 0 auto 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-size: 0.8rem;
+    }
+    .topology h3 {
+      color: var(--muted);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      margin-bottom: 8px;
+    }
+    .topo-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 5px;
+    }
+    .topo-label {
+      color: var(--muted);
+      font-size: 0.72rem;
+      min-width: 90px;
+    }
+    .topo-nodes {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: monospace;
+      font-size: 0.78rem;
+    }
+    .node-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 3px 10px;
+      font-weight: 700;
+    }
+    .node-box.sender  { border-color: var(--accent);  color: var(--accent); }
+    .node-box.relay   { border-color: var(--accent4); color: var(--accent4); }
+    .node-box.dest    { border-color: var(--accent3); color: var(--accent3); }
+    .topo-arrow { color: var(--muted); }
+    .topo-note  { color: var(--muted); font-size: 0.7rem; margin-left: 6px; }
+
+    /* ── tabs ── */
+    .tab-bar {
+      max-width: 980px;
+      margin: 0 auto 0;
+      display: flex;
+      gap: 4px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      padding: 8px 18px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.03em;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* ── panels ── */
+    .panel { display: none; max-width: 980px; margin: 0 auto; padding-top: 24px; }
+    .panel.active { display: block; }
+
+    /* ── diagram card ── */
+    .diagram-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .diagram-header {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .diagram-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+    .badge {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 8px;
+      font-size: 0.68rem;
+      color: var(--dim);
+      white-space: nowrap;
+    }
+    .badge.client { border-color: var(--accent4); color: var(--accent4); }
+    .badge.router { border-color: var(--accent3); color: var(--accent3); }
+    .badge.bcast  { border-color: var(--accent2); color: var(--accent2); }
+
+    .diagram-body {
+      padding: 16px;
+      overflow-x: auto;
+      min-height: 120px;
+    }
+    .diagram-body svg {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .diagram-loading {
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-align: center;
+      padding: 40px;
+    }
+
+    /* ── facts grid ── */
+    .facts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .fact-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .fact-card h4 {
+      padding: 8px 12px;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .fact-list {
+      list-style: none;
+      padding: 8px 0;
+      font-size: 0.78rem;
+    }
+    .fact-list li {
+      padding: 4px 12px;
+      border-bottom: 1px solid #1c1f2e;
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+    }
+    .fact-list li:last-child { border-bottom: none; }
+    .fact-list .key {
+      color: var(--muted);
+      flex-shrink: 0;
+      min-width: 110px;
+      font-size: 0.72rem;
+    }
+    .fact-list .val {
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 0.72rem;
+      color: var(--accent);
+    }
+    .fact-list .val.warn { color: var(--accent4); }
+    .fact-list .val.good { color: var(--accent3); }
+    .fact-list .val.info { color: var(--accent2); }
+
+    /* ── step legend ── */
+    .steps {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .steps h4 {
+      padding: 8px 14px;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .step-list {
+      list-style: none;
+      padding: 8px 0;
+      counter-reset: step;
+    }
+    .step-list li {
+      counter-increment: step;
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      padding: 5px 14px;
+      font-size: 0.78rem;
+      border-bottom: 1px solid #1c1f2e;
+    }
+    .step-list li:last-child { border-bottom: none; }
+    .step-list li::before {
+      content: counter(step);
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.62rem;
+      color: var(--muted);
+      font-weight: 700;
+      text-align: center;
+      line-height: 16px;
+    }
+    .step-list .highlight { color: var(--accent4); font-weight: 600; }
+
+    /* ── comparison table ── */
+    .comparison {
+      max-width: 980px;
+      margin: 32px auto 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .comparison h2 {
+      padding: 12px 16px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .cmp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    .cmp-table th {
+      text-align: left;
+      padding: 10px 16px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .cmp-table th:first-child { min-width: 200px; }
+    .cmp-table td {
+      padding: 9px 16px;
+      border-bottom: 1px solid #1c1f2e;
+      vertical-align: top;
+    }
+    .cmp-table tr:last-child td { border-bottom: none; }
+    .cmp-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .cmp-table .attr { color: var(--dim); font-size: 0.77rem; }
+    .cmp-table .client-col { color: var(--accent4); font-family: monospace; font-size: 0.76rem; }
+    .cmp-table .router-col { color: var(--accent3); font-family: monospace; font-size: 0.76rem; }
+
+    footer {
+      text-align: center;
+      margin-top: 48px;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+    footer code { color: var(--accent); }
+
+    /* ── tooltips ── */
+    .tip {
+      border-bottom: 1px dashed var(--muted);
+      cursor: help;
+      position: relative;
+    }
+    .tip::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: max-content;
+      max-width: 260px;
+      background: #0d1117;
+      border: 1px solid var(--border);
+      color: var(--dim);
+      font-size: 0.72rem;
+      font-weight: 400;
+      line-height: 1.4;
+      padding: 0.4em 0.7em;
+      border-radius: 6px;
+      white-space: normal;
+      text-align: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      z-index: 100;
+    }
+    .tip:hover::after { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<h1>Meshtastic Node Communication Sequences</h1>
+<p class="subtitle">Three scenarios: broadcast flooding, unicast via CLIENT relay, unicast via ROUTER relay</p>
+
+<!-- ── topology ── -->
+<div class="topology">
+  <h3>Network Topology</h3>
+  <div class="topo-row">
+    <span class="topo-label">S1 (Broadcast)</span>
+    <div class="topo-nodes">
+      <span class="node-box sender">App</span>
+      <span class="topo-arrow">→</span>
+      <span class="node-box sender">N1</span>
+      <span class="topo-arrow">↔</span>
+      <span class="node-box relay">N2</span>
+      <span class="topo-arrow">↔</span>
+      <span class="node-box dest">N3</span>
+      <span class="topo-note">all in range of each other</span>
+    </div>
+  </div>
+  <div class="topo-row">
+    <span class="topo-label">S2 (Direct msg)</span>
+    <div class="topo-nodes">
+      <span class="node-box sender">N1</span>
+      <span class="topo-arrow">↔</span>
+      <span class="node-box relay">N2 (relay only)</span>
+      <span class="topo-arrow">↔</span>
+      <span class="node-box dest">N3</span>
+      <span class="topo-note">N1 and N3 out of range — N2 is the sole relay</span>
+    </div>
+  </div>
+  <div class="topo-row">
+    <span class="topo-label">S3 (Trace Route)</span>
+    <div class="topo-nodes">
+      <span class="node-box sender">N1</span>
+      <span class="topo-arrow">↔</span>
+      <span class="node-box relay">N2 (fwd relay)</span>
+      <span class="topo-arrow">↔</span>
+      <span class="node-box dest">N3</span>
+      <span class="topo-arrow">↔</span>
+      <span class="node-box relay">N4 (return relay)</span>
+      <span class="topo-arrow">↔</span>
+      <span class="node-box sender">N1</span>
+      <span class="topo-note">asymmetric paths — forward via N2, return via N4</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── tab bar ── -->
+<div class="tab-bar">
+  <button class="tab-btn active" data-panel="s1">Broadcast</button>
+  <button class="tab-btn" data-panel="s2c">CLIENT — Client Relay</button>
+  <button class="tab-btn" data-panel="s2r">ROUTER — Router Relay</button>
+  <button class="tab-btn" data-panel="s3">Trace Route</button>
+</div>
+
+<!-- ════════════════════════════════════════════
+     PANEL S1
+════════════════════════════════════════════ -->
+<div id="panel-s1" class="panel active">
+
+  <div class="diagram-card">
+    <div class="diagram-header">
+      <span class="diagram-title">S1 — Broadcast Text Message</span>
+      <span class="badge bcast">to = 0xFFFFFFFF</span>
+      <span class="badge">hop_limit = 3</span>
+      <span class="badge">want_ack = false</span>
+    </div>
+    <div class="diagram-body" id="diag-s1"><div class="diagram-loading">Rendering…</div></div>
+  </div>
+
+  <div class="facts-grid">
+    <div class="fact-card">
+      <h4>Packet Fields (LoRa Header)</h4>
+      <ul class="fact-list">
+        <li><span class="key">to</span>         <span class="val">0xFFFFFFFF (broadcast)</span></li>
+        <li><span class="key">from</span>        <span class="val">N1 NodeNum</span></li>
+        <li><span class="key">hop_limit</span>   <span class="val">3 (config default)</span></li>
+        <li><span class="key">hop_start</span>   <span class="val">3 (same as hop_limit)</span></li>
+        <li><span class="key">relay_node</span>  <span class="val">N1 (last byte)</span></li>
+        <li><span class="key">want_ack</span>    <span class="val">0 (broadcast)</span></li>
+        <li><span class="key">portnum</span>     <span class="val">TEXT_MESSAGE_APP (1)</span></li>
+      </ul>
+    </div>
+
+    <div class="fact-card">
+      <h4>Relay Logic — CLIENT Role</h4>
+      <ul class="fact-list">
+        <li><span class="key">isRebroadcaster</span>   <span class="val good">true</span></li>
+        <li><span class="key">relay delay</span>        <span class="val warn">2×<span class="tip" data-tip="Contention Window Maximum — upper bound on the CLIENT relay back-off slot count. Larger value = longer potential delay before rebroadcasting.">CWmax</span>×slot + rand</span></li>
+        <li><span class="key">cancels on dupe</span>    <span class="val warn">true</span></li>
+        <li><span class="key">code</span>               <span class="val info"><span class="tip" data-tip="Broadcast flood relay logic. Maintains a dedup table, computes role-based back-off delay, and cancels queued relays on duplicate receipt. src/mesh/">FloodingRouter.cpp</span></span></li>
+        <li><span class="key">cancel fn</span>          <span class="val info">cancelSending()</span></li>
+      </ul>
+    </div>
+
+    <div class="fact-card">
+      <h4>Implicit ACK (N1)</h4>
+      <ul class="fact-list">
+        <li><span class="key">trigger</span>    <span class="val">hears own packet relayed</span></li>
+        <li><span class="key">p->from</span>    <span class="val">== getNodeNum()</span></li>
+        <li><span class="key">action</span>     <span class="val good">sendAckNak(NONE, …)</span></li>
+        <li><span class="key">retx</span>       <span class="val good">stopRetransmission()</span></li>
+        <li><span class="key">code</span>       <span class="val info"><span class="tip" data-tip="Adds ACK/NACK and retransmit on top of NextHopRouter. Tracks pending packets and stops retransmission on implicit or explicit ACK. src/mesh/">ReliableRouter.cpp</span>:43</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="steps">
+    <h4>Step-by-Step</h4>
+    <ol class="step-list">
+      <li>App sends text; Node 1 builds <code>MeshPacket</code> with <code>to=0xFFFFFFFF</code>, encrypts with AES-CTR (channel PSK), sets <code>hop_limit=hop_start=3</code>.</li>
+      <li>Node 1 broadcasts over LoRa. Both N2 and N3 are in range and receive the same frame.</li>
+      <li>N2 and N3 each check <code>isRebroadcaster()</code> — <strong>true</strong> for CLIENT. Both schedule a relay after a long random back-off window.</li>
+      <li>N2 fires first (random). It relays with <code>hop_limit=2</code>, <code>relay_node=N2</code>. N1 and N3 both receive N2's relay.</li>
+      <li><span class="highlight">Implicit ACK:</span> Node 1 detects its own packet being rebroadcast (<code>p->from == getNodeNum()</code>). <code>ReliableRouter</code> generates an internal ACK and calls <code>stopRetransmission()</code>.</li>
+      <li><span class="highlight">Dupe suppression:</span> N3 receives N2's relay, recognises it as a duplicate. As a CLIENT (<code>roleAllowsCancelingDupe=true</code>) it cancels its own queued relay via <code>cancelSending()</code>.</li>
+      <li>Both N2 and N3 deliver the decoded text to their local app/screen.</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     PANEL S2_client
+════════════════════════════════════════════ -->
+<div id="panel-s2c" class="panel">
+
+  <div class="diagram-card">
+    <div class="diagram-header">
+      <span class="diagram-title">S2 — Direct Message via CLIENT Relay</span>
+      <span class="badge client">Node 2 = CLIENT</span>
+      <span class="badge">want_ack = true</span>
+      <span class="badge">long relay delay</span>
+    </div>
+    <div class="diagram-body" id="diag-s2c"><div class="diagram-loading">Rendering…</div></div>
+  </div>
+
+  <div class="facts-grid">
+    <div class="fact-card">
+      <h4>Initial Send (Node 1)</h4>
+      <ul class="fact-list">
+        <li><span class="key">to</span>          <span class="val">N3 NodeNum</span></li>
+        <li><span class="key">want_ack</span>     <span class="val warn">true</span></li>
+        <li><span class="key">next_hop</span>     <span class="val warn">NO_PREF (unknown)</span></li>
+        <li><span class="key">router used</span>  <span class="val info">FloodingRouter (fallback)</span></li>
+        <li><span class="key">hop_limit</span>    <span class="val">3</span></li>
+      </ul>
+    </div>
+
+    <div class="fact-card">
+      <h4>Relay — CLIENT Behaviour</h4>
+      <ul class="fact-list">
+        <li><span class="key">delay formula</span>  <span class="val warn">2×<span class="tip" data-tip="Contention Window Maximum — upper bound on the CLIENT relay back-off slot count. Larger value = longer potential delay before rebroadcasting.">CWmax</span>×slot + rand(<span class="tip" data-tip="Contention Window size — random jitter range in the relay back-off formula. Spreads relay timing across nodes to reduce simultaneous transmissions.">CWsize</span>)×slot</span></li>
+        <li><span class="key">cancel on dupe</span> <span class="val warn">true (CLIENT)</span></li>
+        <li><span class="key">hop_limit</span>      <span class="val">decremented by 1</span></li>
+        <li><span class="key">relay_node</span>     <span class="val">N2 last byte</span></li>
+        <li><span class="key">code</span>           <span class="val info"><span class="tip" data-tip="Extends FloodingRouter. Caches next-hop per destination in nodeDB to skip flooding when a route to the destination is already known. src/mesh/">NextHopRouter.cpp</span>:127</span></li>
+      </ul>
+    </div>
+
+    <div class="fact-card">
+      <h4>Route Learning (Node 1)</h4>
+      <ul class="fact-list">
+        <li><span class="key">trigger</span>       <span class="val">ACK received with relay_node=N2</span></li>
+        <li><span class="key">update</span>        <span class="val good"><span class="tip" data-tip="In-memory + persisted node store (NodeDB class). Holds next-hop routing hints, SNR history, position, and device metadata per node. See src/mesh/NodeDB.h">nodeDB</span>[N3].next_hop = N2</span></li>
+        <li><span class="key">next send</span>     <span class="val good">NextHopRouter (no flood)</span></li>
+        <li><span class="key">code</span>          <span class="val info"><span class="tip" data-tip="Extends FloodingRouter. Caches next-hop per destination in nodeDB to skip flooding when a route to the destination is already known. src/mesh/">NextHopRouter.cpp</span>:104</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="steps">
+    <h4>Step-by-Step</h4>
+    <ol class="step-list">
+      <li>App sends DM to N3 with <code>want_ack=true</code>. Node 1 has no route in DB → <code>next_hop=NO_PREF</code> → <code>FloodingRouter</code> is used.</li>
+      <li>Node 1 transmits. N2 receives; N3 is out of range.</li>
+      <li>N2 checks <code>isRebroadcaster()</code> = true (CLIENT). Queues rebroadcast with <span class="highlight">long CLIENT delay window</span> (<code>2×<span class="tip" data-tip="Contention Window Maximum — upper bound on the CLIENT relay back-off slot count. Larger value = longer potential delay before rebroadcasting.">CWmax</span>×slot + rand</code>). Also starts a retransmission timer for the relayed packet.</li>
+      <li>After the long delay, N2 relays to N3 with <code>hop_limit=2</code>, <code>relay_node=N2</code>.</li>
+      <li>N3 receives, decrypts (channel PSK), delivers to app. Sends ACK: <code>Routing{error=NONE}</code> with <code>to=N1</code>, <code>request_id=0x1234</code>.</li>
+      <li>N2 receives the ACK (not for N2). <code>NextHopRouter::sniffReceived</code> cancels its retransmission of the original packet and relays the ACK toward N1.</li>
+      <li><span class="highlight">Route learning:</span> Node 1 receives ACK with <code>relay_node=N2</code>. Updates <code><span class="tip" data-tip="In-memory + persisted node store (NodeDB class). Holds next-hop routing hints, SNR history, position, and device metadata per node. See src/mesh/NodeDB.h">nodeDB</span>[N3].next_hop = N2 (last byte)</code>. Stops retransmissions.</li>
+      <li>All subsequent messages to N3 use <code>NextHopRouter</code> directly via N2 — no flooding.</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     PANEL S2_router
+════════════════════════════════════════════ -->
+<div id="panel-s2r" class="panel">
+
+  <div class="diagram-card">
+    <div class="diagram-header">
+      <span class="diagram-title">S2 — Direct Message via ROUTER Relay</span>
+      <span class="badge router">Node 2 = ROUTER</span>
+      <span class="badge">want_ack = true</span>
+      <span class="badge">short priority delay</span>
+    </div>
+    <div class="diagram-body" id="diag-s2r"><div class="diagram-loading">Rendering…</div></div>
+  </div>
+
+  <div class="facts-grid">
+    <div class="fact-card">
+      <h4>Initial Send (Node 1)</h4>
+      <ul class="fact-list">
+        <li><span class="key">to</span>          <span class="val">N3 NodeNum</span></li>
+        <li><span class="key">want_ack</span>     <span class="val warn">true</span></li>
+        <li><span class="key">next_hop</span>     <span class="val warn">NO_PREF (1st send)</span></li>
+        <li><span class="key">router used</span>  <span class="val info">FloodingRouter (fallback)</span></li>
+        <li><span class="key">2nd send</span>     <span class="val good">NextHopRouter (learned)</span></li>
+      </ul>
+    </div>
+
+    <div class="fact-card">
+      <h4>Relay — ROUTER Behaviour</h4>
+      <ul class="fact-list">
+        <li><span class="key">delay formula</span>   <span class="val good">rand(0, 2×<span class="tip" data-tip="Contention Window size — random jitter range in the relay back-off formula. Spreads relay timing across nodes to reduce simultaneous transmissions.">CWsize</span>) × slot</span></li>
+        <li><span class="key">cancel on dupe</span>  <span class="val good">false — never cancels</span></li>
+        <li><span class="key">early window</span>    <span class="val good">shouldRebroadcastEarlyLikeRouter=true</span></li>
+        <li><span class="key">hop_limit</span>       <span class="val">decremented by 1</span></li>
+        <li><span class="key">code</span>            <span class="val info"><span class="tip" data-tip="Radio HAL — TX scheduling, duty-cycle enforcement, and the role-based rebroadcast delay formula (ROUTER vs CLIENT). src/mesh/">RadioInterface.cpp</span>:607</span></li>
+      </ul>
+    </div>
+
+    <div class="fact-card">
+      <h4>Route Learning (same as CLIENT)</h4>
+      <ul class="fact-list">
+        <li><span class="key">trigger</span>       <span class="val">ACK with relay_node=N2</span></li>
+        <li><span class="key">update</span>        <span class="val good"><span class="tip" data-tip="In-memory + persisted node store (NodeDB class). Holds next-hop routing hints, SNR history, position, and device metadata per node. See src/mesh/NodeDB.h">nodeDB</span>[N3].next_hop = N2</span></li>
+        <li><span class="key">2nd message</span>   <span class="val good">NextHopRouter direct</span></li>
+        <li><span class="key">code</span>          <span class="val info"><span class="tip" data-tip="Extends FloodingRouter. Caches next-hop per destination in nodeDB to skip flooding when a route to the destination is already known. src/mesh/">NextHopRouter.cpp</span>:104</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="steps">
+    <h4>Step-by-Step</h4>
+    <ol class="step-list">
+      <li>App sends DM to N3 with <code>want_ack=true</code>. No route known → <code>FloodingRouter</code>. Node 1 transmits.</li>
+      <li>N2 (ROUTER) receives. <code>shouldRebroadcastEarlyLikeRouter()=true</code> → uses <span class="highlight">short priority delay</span> (<code>rand(0, 2×<span class="tip" data-tip="Contention Window size — random jitter range in the relay back-off formula. Spreads relay timing across nodes to reduce simultaneous transmissions.">CWsize</span>)×slot</code>).</li>
+      <li><span class="highlight">Never cancels:</span> <code>roleAllowsCancelingDupe=false</code> for ROUTER. Even if another node relays first, N2 will still transmit its copy.</li>
+      <li>N2 relays to N3 quickly. N3 decrypts, delivers to app, sends ACK back.</li>
+      <li>ACK flows: N3 → N2 → N1. N2 relays the ACK and stops retransmissions of the original packet.</li>
+      <li>Node 1 receives ACK with <code>relay_node=N2</code>. Updates <code><span class="tip" data-tip="In-memory + persisted node store (NodeDB class). Holds next-hop routing hints, SNR history, position, and device metadata per node. See src/mesh/NodeDB.h">nodeDB</span>[N3].next_hop=N2</code>. Stops retransmissions.</li>
+      <li><span class="highlight">2nd message:</span> Node 1 finds <code>next_hop=N2</code> in DB. Uses <code>NextHopRouter</code> with explicit <code>next_hop</code> field — no mesh flood needed. Latency is lower and airtime is saved.</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     PANEL S3
+════════════════════════════════════════════ -->
+<div id="panel-s3" class="panel">
+
+  <div class="diagram-card">
+    <div class="diagram-header">
+      <span class="diagram-title">S3 — Trace Route (Asymmetric Paths)</span>
+      <span class="badge router">Node 2 = ROUTER (fwd)</span>
+      <span class="badge client">Node 4 = CLIENT (return)</span>
+      <span class="badge">portnum = TRACEROUTE_APP</span>
+      <span class="badge">route+snr_towards fwd / route_back+snr_back ret</span>
+    </div>
+    <div class="diagram-body" id="diag-s3"><div class="diagram-loading">Rendering…</div></div>
+  </div>
+
+  <div class="facts-grid">
+    <div class="fact-card">
+      <h4>Forward Path Fields</h4>
+      <ul class="fact-list">
+        <li><span class="key">route</span>           <span class="val">repeated uint32 nodeNums</span></li>
+        <li><span class="key">snr_towards</span>     <span class="val warn">repeated sint32 (dB * 4)</span></li>
+        <li><span class="key">parallel arrays</span> <span class="val">route[i] heard packet at snr_towards[i]</span></li>
+        <li><span class="key">at N2 relay</span>     <span class="val">route=[N2]  snr=[+8]</span></li>
+        <li><span class="key">at N3 dest</span>      <span class="val">route=[N2,N3]  snr=[+8,+5]</span></li>
+      </ul>
+    </div>
+
+    <div class="fact-card">
+      <h4>Return Path Fields</h4>
+      <ul class="fact-list">
+        <li><span class="key">route_back</span>      <span class="val">repeated uint32 nodeNums</span></li>
+        <li><span class="key">snr_back</span>        <span class="val warn">repeated sint32 (dB * 4)</span></li>
+        <li><span class="key">routed via</span>      <span class="val warn">normal mesh — may differ</span></li>
+        <li><span class="key">at N4 relay</span>     <span class="val">route_back=[N4]  snr_back=[+3]</span></li>
+        <li><span class="key">at N1 origin</span>    <span class="val">snr_back=[+3,+11]</span></li>
+      </ul>
+    </div>
+
+    <div class="fact-card">
+      <h4>What N1 Knows at the End</h4>
+      <ul class="fact-list">
+        <li><span class="key">forward path</span>    <span class="val good">N1-N2-N3  snr=[+8,+5]</span></li>
+        <li><span class="key">return path</span>     <span class="val good">N3-N4-N1  snr=[+3,+11]</span></li>
+        <li><span class="key">link quality</span>    <span class="val">per-hop SNR in both directions</span></li>
+        <li><span class="key">asymmetry</span>       <span class="val warn">paths differ — normal in mesh</span></li>
+        <li><span class="key">back path</span>       <span class="val">always collected, no flag needed</span></li>
+        <li><span class="key">back path code</span>   <span class="val info"><span class="tip" data-tip="MeshModule for TRACEROUTE_APP. Appends nodeNum + received SNR to route/snr_towards (forward) and route_back/snr_back (return) at each hop. src/modules/">TraceRouteModule.cpp</span></span></li>
+        <li><span class="key">proto definition</span><span class="val info">RouteDiscovery in mesh.proto</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="steps">
+    <h4>Step-by-Step</h4>
+    <ol class="step-list">
+      <li>App on Node 1 issues a trace route to N3. Node 1 sends <code>TRACEROUTE_APP</code> with <code>to=N3</code>, <code>want_response=true</code>, empty <code>route=[]</code> and <code>snr_towards=[]</code>.</li>
+      <li>Node 1 transmits. N2 (ROUTER) receives it at <strong>SNR = +8 dB</strong>. N3 is out of direct range.</li>
+      <li><span class="highlight">N2 appends its nodeNum and the measured SNR</span> as parallel entries: <code>route=[N2]</code>, <code>snr_towards=[+8]</code>. Relays toward N3 with short ROUTER priority delay.</li>
+      <li>N3 receives from N2 at <strong>SNR = +5 dB</strong>. Appends: <code>route=[N2,N3]</code>, <code>snr_towards=[+8,+5]</code>. As the destination, constructs a RESPONSE with <code>route_back=[]</code>, <code>snr_back=[]</code> and sends it back to N1.</li>
+      <li><span class="highlight">The response is routed independently.</span> N4 — a different node with better line-of-sight to N1 — receives the response from N3 at <strong>SNR = +3 dB</strong>. N4 appends to the return arrays: <code>route_back=[N4]</code>, <code>snr_back=[+3]</code>, and relays toward N1.</li>
+      <li>N1 receives the relayed response from N4 at <strong>SNR = +11 dB</strong>. N1 appends the final SNR: <code>snr_back=[+3,+11]</code>. Now N1 has a full picture: forward path N1→N2→N3 with link SNRs, and return path N3→N4→N1 with link SNRs.</li>
+      <li><span class="highlight">Key insight:</span> <code>snr_towards[i]</code> is the SNR at which <code>route[i]</code> heard the previous node — it measures the link <em>as seen by the receiver</em>. Asymmetric paths and SNR values are common due to terrain, antenna orientation, and transmit power differences between nodes.</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     COMPARISON TABLE
+════════════════════════════════════════════ -->
+<div class="comparison">
+  <h2>CLIENT vs ROUTER Relay — Key Differences</h2>
+  <table class="cmp-table">
+    <thead>
+      <tr>
+        <th>Behaviour</th>
+        <th>CLIENT</th>
+        <th>ROUTER</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="attr">Relay delay formula</td>
+        <td class="client-col">2×<span class="tip" data-tip="Contention Window Maximum — upper bound on the CLIENT relay back-off slot count. Larger value = longer potential delay before rebroadcasting.">CWmax</span>×slot + rand(<span class="tip" data-tip="Contention Window size — random jitter range in the relay back-off formula. Spreads relay timing across nodes to reduce simultaneous transmissions.">CWsize</span>)×slot<br><span style="color:var(--muted);font-size:0.7rem">long back-off window</span></td>
+        <td class="router-col">rand(0, 2×<span class="tip" data-tip="Contention Window size — random jitter range in the relay back-off formula. Spreads relay timing across nodes to reduce simultaneous transmissions.">CWsize</span>) × slot<br><span style="color:var(--muted);font-size:0.7rem">short priority window</span></td>
+      </tr>
+      <tr>
+        <td class="attr">Cancels relay if another node relays first</td>
+        <td class="client-col">YES — roleAllowsCancelingDupe=true<br>calls cancelSending()</td>
+        <td class="router-col">NO — roleAllowsCancelingDupe=false<br>always relays at least once</td>
+      </tr>
+      <tr>
+        <td class="attr">shouldRebroadcastEarlyLikeRouter()</td>
+        <td class="client-col">false</td>
+        <td class="router-col">true</td>
+      </tr>
+      <tr>
+        <td class="attr">Broadcasts NodeInfo / Position / Telemetry</td>
+        <td class="client-col">YES (standard node)</td>
+        <td class="router-col">NO (silent by default)</td>
+      </tr>
+      <tr>
+        <td class="attr">Route learning after ACK</td>
+        <td class="client-col">identical — <span class="tip" data-tip="In-memory + persisted node store (NodeDB class). Holds next-hop routing hints, SNR history, position, and device metadata per node. See src/mesh/NodeDB.h">nodeDB</span>[dest].next_hop updated</td>
+        <td class="router-col">identical — <span class="tip" data-tip="In-memory + persisted node store (NodeDB class). Holds next-hop routing hints, SNR history, position, and device metadata per node. See src/mesh/NodeDB.h">nodeDB</span>[dest].next_hop updated</td>
+      </tr>
+      <tr>
+        <td class="attr">Ideal use case</td>
+        <td class="client-col">Mobile / handheld nodes</td>
+        <td class="router-col">Fixed, elevated infrastructure nodes</td>
+      </tr>
+      <tr>
+        <td class="attr">Key source file</td>
+        <td class="client-col"><span class="tip" data-tip="Broadcast flood relay logic. Maintains a dedup table, computes role-based back-off delay, and cancels queued relays on duplicate receipt. src/mesh/">FloodingRouter.cpp</span><br><span class="tip" data-tip="Extends FloodingRouter. Caches next-hop per destination in nodeDB to skip flooding when a route to the destination is already known. src/mesh/">NextHopRouter.cpp</span></td>
+        <td class="router-col"><span class="tip" data-tip="Radio HAL — TX scheduling, duty-cycle enforcement, and the role-based rebroadcast delay formula (ROUTER vs CLIENT). src/mesh/">RadioInterface.cpp</span>:604<br><span class="tip" data-tip="Broadcast flood relay logic. Maintains a dedup table, computes role-based back-off delay, and cancels queued relays on duplicate receipt. src/mesh/">FloodingRouter.cpp</span>:103</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<footer>
+  Source: <code>src/mesh/<span class="tip" data-tip="Broadcast flood relay logic. Maintains a dedup table, computes role-based back-off delay, and cancels queued relays on duplicate receipt. src/mesh/">FloodingRouter.cpp</span></code> · <code><span class="tip" data-tip="Extends FloodingRouter. Caches next-hop per destination in nodeDB to skip flooding when a route to the destination is already known. src/mesh/">NextHopRouter.cpp</span></code> · <code><span class="tip" data-tip="Adds ACK/NACK and retransmit on top of NextHopRouter. Tracks pending packets and stops retransmission on implicit or explicit ACK. src/mesh/">ReliableRouter.cpp</span></code> · <code><span class="tip" data-tip="Radio HAL — TX scheduling, duty-cycle enforcement, and the role-based rebroadcast delay formula (ROUTER vs CLIENT). src/mesh/">RadioInterface.cpp</span></code> · <code>src/modules/<span class="tip" data-tip="MeshModule for TRACEROUTE_APP. Appends nodeNum + received SNR to route/snr_towards (forward) and route_back/snr_back (return) at each hop. src/modules/">TraceRouteModule.cpp</span></code>
+</footer>
+
+<!-- ════════════════════════════════════════════
+     DIAGRAMS + SCRIPTS
+════════════════════════════════════════════ -->
+<script>
+// ── Diagram definitions ────────────────────────────────────────────────────
+const DIAG_S1 = `
+sequenceDiagram
+    participant App as App
+    participant N1 as "Node1 CLIENT"
+    participant N2 as "Node2 CLIENT"
+    participant N3 as "Node3 CLIENT"
+
+    App->>N1: sendText(Hello mesh!)
+    Note over N1: to=0xFFFFFFFF, AES-CTR PSK, hop_limit=3, hop_start=3
+
+    N1->>N2: LoRa TX  BCAST  id=0xABCD  hop=3  relay=N1
+    N1->>N3: LoRa TX  BCAST  id=0xABCD  hop=3  relay=N1
+
+    Note over N2: CLIENT - schedule relay after long back-off window
+    Note over N3: CLIENT - schedule relay after long back-off window
+
+    N2->>N1: LoRa relay  BCAST  id=0xABCD  hop=2  relay=N2
+    N2->>N3: LoRa relay  BCAST  id=0xABCD  hop=2  relay=N2
+
+    Note over N1: heard own relay - implicit ACK, stopRetransmission
+    Note over N3: dupe detected - cancelSending, roleAllowsCancelingDupe=true
+
+    Note over N2,N3: Text message delivered to app
+`;
+
+const DIAG_S2C = `
+sequenceDiagram
+    participant App1 as "App-N1"
+    participant N1 as Node1
+    participant N2 as "Node2 CLIENT"
+    participant N3 as Node3
+    participant App3 as "App-N3"
+
+    App1->>N1: sendText to N3, want_ack=true
+    Note over N1: to=N3, want_ack=true, next_hop=NO_PREF, FloodingRouter fallback
+
+    N1->>N2: LoRa TX  to=N3  id=0x1234  hop=3  next_hop=0x00  want_ack=1
+    N1 --x N3: out of radio range
+
+    Note over N2: CLIENT - long back-off delay, queue relay in TX buffer
+
+    rect rgb(42,38,72)
+        Note over N1,App3: Long CLIENT delay window...
+        N2->>N3: LoRa relay  to=N3  id=0x1234  hop=2  relay=N2
+    end
+
+    Note over N3: decrypt with PSK, deliver to app
+    N3->>App3: text message received
+
+    N3->>N2: LoRa ACK  to=N1  from=N3  request_id=0x1234  hop=1
+    Note over N2: ACK not for us - cancel own retx, relay toward N1
+
+    N2->>N1: LoRa ACK relay  to=N1  from=N3  request_id=0x1234  relay=N2
+
+    Note over N1: ACK rcvd, relay_node=N2 - nodeDB[N3].next_hop=N2, stopRetransmission
+    N1->>App1: delivery confirmed
+`;
+
+const DIAG_S2R = `
+sequenceDiagram
+    participant App1 as "App-N1"
+    participant N1 as Node1
+    participant N2 as "Node2 ROUTER"
+    participant N3 as Node3
+    participant App3 as "App-N3"
+
+    App1->>N1: sendText to N3, want_ack=true
+    Note over N1: to=N3, want_ack=true, next_hop=NO_PREF, FloodingRouter fallback
+
+    N1->>N2: LoRa TX  to=N3  id=0x5678  hop=3  next_hop=0x00  want_ack=1
+    N1 --x N3: out of radio range
+
+    Note over N2: ROUTER - short priority delay, roleAllowsCancelingDupe=false
+
+    rect rgb(18,48,32)
+        Note over N1,App3: Short ROUTER priority window...
+        N2->>N3: LoRa relay  to=N3  id=0x5678  hop=2  relay=N2
+    end
+
+    Note over N3: decrypt with PSK, deliver to app
+    N3->>App3: text message received
+
+    N3->>N2: LoRa ACK  to=N1  from=N3  request_id=0x5678  hop=1
+    Note over N2: ACK not for us - stopRetransmission, relay toward N1
+
+    N2->>N1: LoRa ACK relay  to=N1  from=N3  request_id=0x5678  relay=N2
+
+    Note over N1: ACK rcvd, relay_node=N2 - nodeDB[N3].next_hop=N2, stopRetransmission
+    N1->>App1: delivery confirmed
+
+    rect rgb(22,28,52)
+        Note over App1,App3: 2nd message - learned route reused
+        App1->>N1: sendText Follow-up, want_ack=true
+        Note over N1: next_hop=N2 in nodeDB - NextHopRouter, no flood
+        N1->>N2: LoRa TX  to=N3  id=0x9ABC  hop=3  next_hop=N2
+        N2->>N3: LoRa relay  to=N3  id=0x9ABC  hop=2  relay=N2
+        N3->>App3: text message received
+        N3->>N2: LoRa ACK  to=N1  request_id=0x9ABC
+        N2->>N1: LoRa ACK relay  relay=N2
+        N1->>App1: delivery confirmed
+    end
+`;
+
+const DIAG_S3 = `
+sequenceDiagram
+    participant App1 as "App-N1"
+    participant N1 as Node1
+    participant N2 as "Node2 ROUTER"
+    participant N3 as Node3
+    participant N4 as "Node4 CLIENT"
+
+    App1->>N1: initiateTraceRoute to N3
+    Note over N1: portnum=TRACEROUTE_APP, to=N3, want_response=true, route=[], snr_towards=[]
+
+    N1->>N2: LoRa TX  to=N3  hop=3  route=[]  snr_towards=[]
+    N1 --x N3: out of radio range
+
+    Note over N2: ROUTER - received N1 at SNR=+8dB
+    Note over N2: append nodeNum + SNR, route=[N2], snr_towards=[+8]
+    N2->>N3: LoRa relay  to=N3  hop=2  route=[N2]  snr_towards=[+8]
+
+    Note over N3: destination - received N2 at SNR=+5dB
+    Note over N3: append nodeNum + SNR, route=[N2,N3], snr_towards=[+8,+5]
+    Note over N3: send RESPONSE to N1, route_back=[], snr_back=[]
+
+    rect rgb(22,28,52)
+        Note over App1,N4: Return path - routed independently, route_back accumulates
+        N3->>N4: LoRa RESPONSE  to=N1  route=[N2,N3]  snr_towards=[+8,+5]  route_back=[]  snr_back=[]
+        Note over N4: received N3 at SNR=+3dB - append to route_back and snr_back
+        Note over N4: route_back=[N4], snr_back=[+3], relay toward N1
+        N4->>N1: LoRa RESPONSE relay  to=N1  route=[N2,N3]  snr_towards=[+8,+5]  route_back=[N4]  snr_back=[+3]
+    end
+
+    Note over N1: received N4 at SNR=+11dB - append to snr_back
+    Note over N1: snr_back=[+3,+11] - full picture of both paths
+    N1->>App1: fwd N1-N2-N3 snr=[+8,+5] / ret N3-N4-N1 snr=[+3,+11]
+`;
+
+// ── Mermaid init ───────────────────────────────────────────────────────────
+mermaid.initialize({
+  startOnLoad: false,
+  logLevel: 'debug',
+  theme: 'dark',
+  themeVariables: {
+    primaryColor:        '#1e2235',
+    primaryTextColor:    '#e2e8f0',
+    primaryBorderColor:  '#3e4a6e',
+    lineColor:           '#67e8f9',
+    secondaryColor:      '#1a1d27',
+    tertiaryColor:       '#2d3250',
+    background:          '#0f1117',
+    mainBkg:             '#1a1d27',
+    nodeBorder:          '#3e4a6e',
+    titleColor:          '#67e8f9',
+    actorBkg:            '#1e2235',
+    actorBorder:         '#67e8f9',
+    actorTextColor:      '#e2e8f0',
+    actorLineColor:      '#475569',
+    signalColor:         '#94a3b8',
+    signalTextColor:     '#e2e8f0',
+    labelBoxBkgColor:    '#1e2235',
+    labelBoxBorderColor: '#3e4a6e',
+    labelTextColor:      '#e2e8f0',
+    loopTextColor:       '#e2e8f0',
+    noteBorderColor:     '#a78bfa',
+    noteBkgColor:        '#2a1e4a',
+    noteTextColor:       '#ddd6fe',
+    activationBorderColor: '#34d399',
+    activationBkgColor:    '#0d2620',
+    sequenceNumberColor:   '#67e8f9',
+  },
+  sequence: {
+    diagramMarginX: 10,
+    diagramMarginY: 10,
+    actorMargin: 60,
+    messageMargin: 30,
+    mirrorActors: false,
+    wrap: true,
+    useMaxWidth: true,
+    boxMargin: 8,
+    boxTextMargin: 5,
+  }
+});
+
+// ── Render ─────────────────────────────────────────────────────────────────
+const diagrams = {
+  's1':  { el: 'diag-s1',  src: DIAG_S1  },
+  's2c': { el: 'diag-s2c', src: DIAG_S2C },
+  's2r': { el: 'diag-s2r', src: DIAG_S2R },
+  's3':  { el: 'diag-s3',  src: DIAG_S3  },
+};
+const rendered = {};
+
+async function renderDiagram(key) {
+  if (rendered[key]) return;
+  rendered[key] = true;
+  const { el, src } = diagrams[key];
+  const target = document.getElementById(el);
+  const trimmed = src.trim();
+  const uid = 'mermaid-' + key + '-' + Date.now();
+
+  try {
+    const { svg, bindFunctions } = await mermaid.render(uid, trimmed);
+    target.innerHTML = svg;
+    if (bindFunctions) bindFunctions(target);
+    const svgEl = target.querySelector('svg');
+    if (svgEl) { svgEl.style.maxWidth = '100%'; svgEl.style.height = 'auto'; }
+  } catch (err) {
+    console.error('[mermaid] FAILED:', key, err);
+    const lines = trimmed.split('\n')
+      .map((l, i) => String(i + 1).padStart(3, ' ') + '  ' + l)
+      .join('\n');
+    target.innerHTML =
+      '<pre style="color:#f87171;font-size:0.78rem;padding:14px;white-space:pre-wrap;word-break:break-word">' +
+      '<b>Mermaid error in diagram: ' + key + '</b>\n\n' +
+      (err.message || String(err)) + '\n\n' +
+      '<span style="color:#94a3b8">── source (' + key + ') ──────────────────────────</span>\n' +
+      lines + '</pre>';
+  }
+}
+
+// ── Tabs ───────────────────────────────────────────────────────────────────
+const tabPanelMap = { s1: 'panel-s1', s2c: 'panel-s2c', s2r: 'panel-s2r', s3: 'panel-s3' };
+
+function switchTab(key) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelector('[data-panel="' + key + '"]').classList.add('active');
+  document.getElementById(tabPanelMap[key]).classList.add('active');
+  renderDiagram(key);
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.panel));
+});
+
+// Render all diagrams on load so every error surfaces immediately
+document.addEventListener('DOMContentLoaded', () => {
+  renderDiagram('s1');
+  renderDiagram('s2c');
+  renderDiagram('s2r');
+  renderDiagram('s3');
+});
+</script>
+
+</body>
+</html>
