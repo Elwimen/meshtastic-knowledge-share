@@ -550,5 +550,195 @@ const MESHTASTIC_LANG = {
 
   // Slide 27
   slide27_heading: { en: "Questions?", hr: "Pitanja?" },
-  slide27_thanks: { en: "Thank you!", hr: "Hvala!" }
+  slide27_thanks: { en: "Thank you!", hr: "Hvala!" },
+
+  // Firmware Deep Dive — section divider
+  fw_divider_heading: { en: "Firmware Architecture", hr: "Arhitektura firmwarea" },
+  fw_divider_sub: { en: "Deep Dive", hr: "Dubinski pregled" },
+  fw_divider_note: { en: "For the engineers in the room", hr: "Za in\u017eenjere u publici" },
+
+  // Slide 28 — Codebase Map
+  slide28_heading: { en: "Codebase Map", hr: "Karta koda" },
+  slide28_mesh: {
+    en: "<code>mesh/</code> \u2014 <span class=\"highlight\">routing, radio, channels, NodeDB</span>",
+    hr: "<code>mesh/</code> \u2014 <span class=\"highlight\">usmjeravanje, radio, kanali, NodeDB</span>"
+  },
+  slide28_modules: {
+    en: "<code>modules/</code> \u2014 <span class=\"highlight\">plugin system, 20+ built-in modules</span>",
+    hr: "<code>modules/</code> \u2014 <span class=\"highlight\">plugin sustav, 20+ ugra\u0111enih modula</span>"
+  },
+  slide28_platform: {
+    en: "<code>platform/</code> \u2014 <span class=\"highlight\">per-MCU HAL (ESP32, nRF52, RP2040\u2026)</span>",
+    hr: "<code>platform/</code> \u2014 <span class=\"highlight\">HAL po MCU-u (ESP32, nRF52, RP2040\u2026)</span>"
+  },
+  slide28_concurrency: {
+    en: "<code>concurrency/</code> \u2014 <span class=\"highlight\">OSThread, scheduling, locks</span>",
+    hr: "<code>concurrency/</code> \u2014 <span class=\"highlight\">OSThread, raspore\u0111ivanje, brave</span>"
+  },
+  slide28_graphics: {
+    en: "<code>graphics/</code> \u2014 <span class=\"highlight\">OLED, TFT, e-ink display drivers</span>",
+    hr: "<code>graphics/</code> \u2014 <span class=\"highlight\">drajveri za OLED, TFT, e-ink zaslone</span>"
+  },
+  slide28_mqtt: {
+    en: "<code>mqtt/</code> \u2014 <span class=\"highlight\">internet bridge via WiFi</span>",
+    hr: "<code>mqtt/</code> \u2014 <span class=\"highlight\">internetski most putem WiFi-ja</span>"
+  },
+
+  // Slide 29 — Build System & Hardware
+  slide29_heading: { en: "Build System &amp; Hardware", hr: "Build sustav i hardver" },
+  slide29_mcu_heading: { en: "163 board variants \u2014 7 MCU families", hr: "163 varijante plo\u010da \u2014 7 MCU obitelji" },
+  slide29_th_mcu: { en: "MCU", hr: "MCU" },
+  slide29_th_count: { en: "Variants", hr: "Varijante" },
+  slide29_th_examples: { en: "Examples", hr: "Primjeri" },
+  slide29_build_heading: { en: "Build", hr: "Izgradnja" },
+  slide29_flags_heading: { en: "Conditional Compilation", hr: "Uvjetna kompilacija" },
+
+  // Slide 30 — Init Sequence
+  slide30_heading: { en: "Startup &amp; Init Sequence", hr: "Redoslijed pokretanja i inicijalizacije" },
+  slide30_step1: {
+    en: "<strong>main.cpp</strong> \u2014 hardware detection via <code>ScanI2C</code>",
+    hr: "<strong>main.cpp</strong> \u2014 detekcija hardvera putem <code>ScanI2C</code>"
+  },
+  slide30_step2: {
+    en: "<strong>FSCommon</strong> \u2014 mount LittleFS / SPIFFS",
+    hr: "<strong>FSCommon</strong> \u2014 montiranje LittleFS / SPIFFS"
+  },
+  slide30_step3: {
+    en: "<strong>NodeDB</strong> \u2014 load device state from <code>/prefs/</code>",
+    hr: "<strong>NodeDB</strong> \u2014 u\u010ditavanje stanja ure\u0111aja iz <code>/prefs/</code>"
+  },
+  slide30_step4: {
+    en: "<strong>Screen</strong> \u2014 init OLED / TFT / e-ink display",
+    hr: "<strong>Screen</strong> \u2014 inicijalizacija OLED / TFT / e-ink zaslona"
+  },
+  slide30_step5: {
+    en: "<strong>MeshService</strong> \u2014 start Router + Radio + Bluetooth",
+    hr: "<strong>MeshService</strong> \u2014 pokretanje Routera + Radija + Bluetootha"
+  },
+  slide30_step6: {
+    en: "<strong>setupModules()</strong> \u2014 instantiate all plugin modules",
+    hr: "<strong>setupModules()</strong> \u2014 instanciranje svih plugin modula"
+  },
+  slide30_step7: {
+    en: "<strong>PowerFSM</strong> \u2014 enter main event loop",
+    hr: "<strong>PowerFSM</strong> \u2014 ulaz u glavnu petlju doga\u0111aja"
+  },
+  slide30_note: {
+    en: "Platform-specific wiring in <code>src/platform/[mcu]/main-[mcu].cpp</code>",
+    hr: "Platformski kod u <code>src/platform/[mcu]/main-[mcu].cpp</code>"
+  },
+
+  // Slide 31 — Router Hierarchy
+  slide31_heading: { en: "Router Hierarchy", hr: "Hijerarhija usmjeriva\u010da" },
+  slide31_files: {
+    en: "<code>src/mesh/Router.h</code> \u00b7 <code>FloodingRouter.h</code> \u00b7 <code>NextHopRouter.h</code> \u00b7 <code>ReliableRouter.h</code>",
+    hr: "<code>src/mesh/Router.h</code> \u00b7 <code>FloodingRouter.h</code> \u00b7 <code>NextHopRouter.h</code> \u00b7 <code>ReliableRouter.h</code>"
+  },
+  slide31_flow_heading: { en: "Packet Flow", hr: "Tijek paketa" },
+  slide31_flow1: {
+    en: "Radio RX \u2192 <code>enqueueReceivedMessage()</code>",
+    hr: "Radio RX \u2192 <code>enqueueReceivedMessage()</code>"
+  },
+  slide31_flow2: {
+    en: "<code>Router::runOnce()</code> processes queue",
+    hr: "<code>Router::runOnce()</code> obra\u0111uje red \u010dekanja"
+  },
+  slide31_flow3: {
+    en: "Deliver to local modules via <code>MeshService</code>",
+    hr: "Dostava lokalnim modulima putem <code>MeshService</code>"
+  },
+  slide31_flow4: {
+    en: "Rebroadcast? \u2192 <code>perhapsRebroadcast()</code>",
+    hr: "Ponoviti emitiranje? \u2192 <code>perhapsRebroadcast()</code>"
+  },
+  slide31_flow5: {
+    en: "TX: <code>sendLocal()</code> \u2192 radio TX queue",
+    hr: "TX: <code>sendLocal()</code> \u2192 radio TX red"
+  },
+  slide31_thread_note: {
+    en: "Router is an <code>OSThread</code> \u2014 runs cooperatively via <code>ArduinoThread</code> scheduler",
+    hr: "Router je <code>OSThread</code> \u2014 kooperativno radi putem <code>ArduinoThread</code> raspora\u0111iva\u010da"
+  },
+
+  // Slide 32 — Module / Plugin System
+  slide32_heading: { en: "Module / Plugin System", hr: "Modul / Plugin sustav" },
+  slide32_lifecycle_heading: { en: "MeshModule Lifecycle", hr: "MeshModule \u017eivotni ciklus" },
+  slide32_dispatch: {
+    en: "Dispatch: <code>MeshModule::callModules()</code> iterates all registered modules by portnum",
+    hr: "Dispatch: <code>MeshModule::callModules()</code> prolazi kroz sve registrirane module po portnumu"
+  },
+  slide32_modules_heading: { en: "Key Modules", hr: "Klju\u010dni moduli" },
+  slide32_mod_text: { en: "channel &amp; DM text", hr: "kanalne i izravne poruke" },
+  slide32_mod_pos: { en: "GPS broadcast", hr: "GPS emitiranje" },
+  slide32_mod_telem: { en: "sensors &amp; battery", hr: "senzori i baterija" },
+  slide32_mod_admin: { en: "device config via mesh", hr: "konfiguracija ure\u0111aja putem mesha" },
+  slide32_mod_sf: { en: "buffer for offline nodes", hr: "me\u0111uspremnik za offline \u010dvorove" },
+  slide32_mod_serial: { en: "UART bridge", hr: "UART most" },
+  slide32_mod_trace: { en: "path tracing", hr: "tra\u017eenje puta" },
+  slide32_mod_neighbor: { en: "topology map", hr: "topolo\u0161ka karta" },
+  slide32_exclude: {
+    en: "Excluded per-board via <code>-DMESHTASTIC_EXCLUDE_*</code>",
+    hr: "Isklju\u010deno po plo\u010di putem <code>-DMESHTASTIC_EXCLUDE_*</code>"
+  },
+
+  // Slide 33 — Platform HAL
+  slide33_heading: { en: "Platform HAL", hr: "Platformski HAL" },
+  slide33_abstractions_heading: { en: "Common Abstractions", hr: "Zajedni\u010dke apstrakcije" },
+  slide33_abs1: {
+    en: "<code>PowerHAL</code> \u2014 sleep, deep-sleep, battery",
+    hr: "<code>PowerHAL</code> \u2014 sleep, deep-sleep, baterija"
+  },
+  slide33_abs2: {
+    en: "<code>CryptoEngine</code> \u2014 AES-CTR, x25519",
+    hr: "<code>CryptoEngine</code> \u2014 AES-CTR, x25519"
+  },
+  slide33_abs3: {
+    en: "<code>FSCommon</code> \u2014 LittleFS / SPIFFS abstraction",
+    hr: "<code>FSCommon</code> \u2014 LittleFS / SPIFFS apstrakcija"
+  },
+  slide33_abs4: {
+    en: "<code>SPILock</code> \u2014 shared SPI bus arbitration",
+    hr: "<code>SPILock</code> \u2014 arbitracija dijeljenjem SPI sabirnice"
+  },
+  slide33_abs5: {
+    en: "<code>RadioInterface</code> \u2192 <code>RadioLibInterface</code> \u2192 chipset drivers",
+    hr: "<code>RadioInterface</code> \u2192 <code>RadioLibInterface</code> \u2192 drajveri \u010dipova"
+  },
+  slide33_note: {
+    en: "Compile-time selection: <code>#ifdef ARCH_ESP32</code>, <code>ARCH_NRF52</code>, <code>ARCH_RP2040</code>",
+    hr: "Odabir pri kompilaciji: <code>#ifdef ARCH_ESP32</code>, <code>ARCH_NRF52</code>, <code>ARCH_RP2040</code>"
+  },
+
+  // Slide 34 — Key Data Structures
+  slide34_heading: { en: "Key Data Structures", hr: "Klju\u010dne strukture podataka" },
+  slide34_header_heading: { en: "PacketHeader (12 bytes)", hr: "PacketHeader (12 bajtova)" },
+  slide34_nodedb_heading: { en: "NodeDB Segments", hr: "NodeDB segmenti" },
+  slide34_seg_config: { en: "\u2014 radio, device, display settings", hr: "\u2014 radio, ure\u0111aj, postavke zaslona" },
+  slide34_seg_module: { en: "\u2014 per-module config", hr: "\u2014 konfiguracija po modulu" },
+  slide34_seg_channels: { en: "\u2014 PSK &amp; channel roles", hr: "\u2014 PSK i uloge kanala" },
+  slide34_seg_state: { en: "\u2014 runtime state", hr: "\u2014 stanje izvr\u0161avanja" },
+  slide34_seg_nodes: { en: "\u2014 known peer nodes", hr: "\u2014 poznati \u010dvorovi u mre\u017ei" },
+  slide34_radio_heading: { en: "Radio Chipset Chain", hr: "Lanac radio \u010dipova" },
+
+  // Slide 35 — Where to Start
+  slide35_heading: { en: "Where to Start", hr: "Gdje po\u010deti" },
+  slide35_embedded_heading: { en: "Embedded / HW", hr: "Embedded / HW" },
+  slide35_emb_tip: {
+    en: "Add a board: create a new <code>variants/</code> dir",
+    hr: "Dodaj plo\u010du: stvori novi <code>variants/</code> direktorij"
+  },
+  slide35_protocol_heading: { en: "Protocol / Networking", hr: "Protokol / Mre\u017ea" },
+  slide35_proto_tip: {
+    en: "Protobuf defs: <code>protobufs/meshtastic/</code>",
+    hr: "Protobuf definicije: <code>protobufs/meshtastic/</code>"
+  },
+  slide35_sw_heading: { en: "SW / Application", hr: "SW / Aplikacija" },
+  slide35_sw_tip: {
+    en: "Add a feature: subclass <code>MeshModule</code>",
+    hr: "Dodaj funkcionalnost: naslijedi <code>MeshModule</code>"
+  },
+  slide35_note: {
+    en: "C++17 \u00b7 PlatformIO \u00b7 RadioLib \u00b7 nanopb \u00b7 ArduinoThread",
+    hr: "C++17 \u00b7 PlatformIO \u00b7 RadioLib \u00b7 nanopb \u00b7 ArduinoThread"
+  }
 };

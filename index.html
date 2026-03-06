@@ -964,6 +964,344 @@
   </p>
 </section>
 
+<!-- ===================== SECTION DIVIDER: FIRMWARE DEEP DIVE ===================== -->
+<section class="center" data-background-color="#0d1b2a">
+  <h2 data-i18n="fw_divider_heading">Firmware Architecture</h2>
+  <h3 class="dim" data-i18n="fw_divider_sub">Deep Dive</h3>
+  <br>
+  <p class="dim"><code>github.com/meshtastic/firmware</code></p>
+  <br>
+  <p class="dim" style="font-size:0.7em" data-i18n="fw_divider_note">For the engineers in the room</p>
+</section>
+
+<!-- ===================== SLIDE 28: CODEBASE MAP ===================== -->
+<section>
+  <h2 data-i18n="slide28_heading">Codebase Map</h2>
+  <div class="two-col" style="gap:2em">
+    <div>
+      <pre><code class="language-text" style="font-size:0.55em; line-height:1.6">firmware/src/
+├── main.cpp          ← entry point
+├── MeshService.h     ← app coordinator
+├── configuration.h   ← global config
+│
+├── mesh/             ← routing + radio
+├── modules/          ← plugin system
+├── graphics/         ← display / UI
+├── platform/         ← MCU HAL
+├── concurrency/      ← threads / locks
+├── mqtt/             ← cloud bridge
+├── gps/              ← location
+├── power/            ← power FSM
+├── input/            ← buttons
+├── detect/           ← I²C scan
+├── nimble/           ← BLE (ESP32)
+└── buzz/ motion/     ← peripherals</code></pre>
+    </div>
+    <div style="font-size:0.8em">
+      <ul style="line-height:2.1">
+        <li data-i18n="slide28_mesh"><code>mesh/</code> — <span class="highlight">routing, radio, channels, NodeDB</span></li>
+        <li data-i18n="slide28_modules"><code>modules/</code> — <span class="highlight">plugin system, 20+ built-in modules</span></li>
+        <li data-i18n="slide28_platform"><code>platform/</code> — <span class="highlight">per-MCU HAL (ESP32, nRF52, RP2040…)</span></li>
+        <li data-i18n="slide28_concurrency"><code>concurrency/</code> — <span class="highlight">OSThread, scheduling, locks</span></li>
+        <li data-i18n="slide28_graphics"><code>graphics/</code> — <span class="highlight">OLED, TFT, e-ink display drivers</span></li>
+        <li data-i18n="slide28_mqtt"><code>mqtt/</code> — <span class="highlight">internet bridge via WiFi</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SLIDE 29: BUILD SYSTEM & HARDWARE ===================== -->
+<section>
+  <h2 data-i18n="slide29_heading">Build System &amp; Hardware</h2>
+  <div class="two-col" style="gap:2em">
+    <div>
+      <h3 data-i18n="slide29_mcu_heading">163 board variants &mdash; 7 MCU families</h3>
+      <div class="table-wrap">
+      <table style="font-size:0.72em">
+        <thead>
+          <tr>
+            <th data-i18n="slide29_th_mcu">MCU</th>
+            <th data-i18n="slide29_th_count">Variants</th>
+            <th data-i18n="slide29_th_examples">Examples</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>ESP32-S3</td><td>42</td><td>T-Deck, Heltec V4</td></tr>
+          <tr><td>nRF52840</td><td>45</td><td>RAK4631, T-Echo</td></tr>
+          <tr><td>ESP32</td><td>23</td><td>T-Beam, Heltec V2</td></tr>
+          <tr><td>RP2040/2350</td><td>12</td><td>RPi Pico, Challenger</td></tr>
+          <tr><td>STM32WL</td><td>5</td><td>RAK3172, Wio-E5</td></tr>
+          <tr><td>Linux</td><td>2</td><td>portduino</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+    <div style="font-size:0.8em">
+      <h3 data-i18n="slide29_build_heading">Build</h3>
+      <pre><code class="language-bash">cd firmware/
+pio run -e tbeam        # ESP32
+pio run -e rak4631      # nRF52840
+pio test -e native      # unit tests</code></pre>
+      <br>
+      <h3 data-i18n="slide29_flags_heading">Conditional Compilation</h3>
+      <pre><code class="language-text" style="font-size:0.75em">-DMESHTASTIC_EXCLUDE_STOREFORWARD=1
+-DMESHTASTIC_EXCLUDE_REMOTEHARDWARE=1
+-DMAX_THREADS=40
+-DPB_ENABLE_MALLOC=1   # nanopb</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SLIDE 30: INIT SEQUENCE ===================== -->
+<section>
+  <h2 data-i18n="slide30_heading">Startup &amp; Init Sequence</h2>
+  <br>
+  <div class="two-col" style="gap:3em">
+    <div style="font-size:0.78em">
+      <div style="display:flex; gap:1em; align-items:flex-start; margin-bottom:0.9em">
+        <span class="tag" style="min-width:2.2em; text-align:center">1</span>
+        <div data-i18n="slide30_step1"><strong>main.cpp</strong> — hardware detection via <code>ScanI2C</code></div>
+      </div>
+      <div style="display:flex; gap:1em; align-items:flex-start; margin-bottom:0.9em">
+        <span class="tag" style="min-width:2.2em; text-align:center">2</span>
+        <div data-i18n="slide30_step2"><strong>FSCommon</strong> — mount LittleFS / SPIFFS</div>
+      </div>
+      <div style="display:flex; gap:1em; align-items:flex-start; margin-bottom:0.9em">
+        <span class="tag" style="min-width:2.2em; text-align:center">3</span>
+        <div data-i18n="slide30_step3"><strong>NodeDB</strong> — load device state from <code>/prefs/</code></div>
+      </div>
+      <div style="display:flex; gap:1em; align-items:flex-start; margin-bottom:0.9em">
+        <span class="tag" style="min-width:2.2em; text-align:center">4</span>
+        <div data-i18n="slide30_step4"><strong>Screen</strong> — init OLED / TFT / e-ink display</div>
+      </div>
+      <div style="display:flex; gap:1em; align-items:flex-start; margin-bottom:0.9em">
+        <span class="tag" style="min-width:2.2em; text-align:center">5</span>
+        <div data-i18n="slide30_step5"><strong>MeshService</strong> — start Router + Radio + Bluetooth</div>
+      </div>
+      <div style="display:flex; gap:1em; align-items:flex-start; margin-bottom:0.9em">
+        <span class="tag" style="min-width:2.2em; text-align:center">6</span>
+        <div data-i18n="slide30_step6"><strong>setupModules()</strong> — instantiate all plugin modules</div>
+      </div>
+      <div style="display:flex; gap:1em; align-items:flex-start">
+        <span class="tag" style="min-width:2.2em; text-align:center">7</span>
+        <div data-i18n="slide30_step7"><strong>PowerFSM</strong> — enter main event loop</div>
+      </div>
+    </div>
+    <div>
+      <pre><code class="language-text" style="font-size:0.65em; line-height:1.7">main.cpp
+  └─ ScanI2C::perform()
+  └─ FSCommon::initFS()
+  └─ nodeDB.init()
+  └─ screen->setup()
+  └─ service.init()
+       └─ router->init()
+       └─ radioInterface->init()
+       └─ bluetooth->setup()
+  └─ setupModules()
+  └─ powerFSM.run()</code></pre>
+      <br>
+      <p class="dim" style="font-size:0.7em" data-i18n="slide30_note">Platform-specific wiring in <code>src/platform/[mcu]/main-[mcu].cpp</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SLIDE 31: ROUTER HIERARCHY ===================== -->
+<section>
+  <h2 data-i18n="slide31_heading">Router Hierarchy</h2>
+  <div class="two-col" style="gap:2em">
+    <div>
+      <pre><code class="language-text" style="font-size:0.7em; line-height:2.0">Router  (OSThread)
+  └─ FloodingRouter
+       recentBroadcasts dedup table
+       perhapsRebroadcast()
+       └─ NextHopRouter  (v2.6+)
+            neighbor-aware path
+            └─ ReliableRouter
+                 ACK / NACK
+                 3 retransmit attempts</code></pre>
+      <br>
+      <p class="dim" style="font-size:0.72em" data-i18n="slide31_files"><code>src/mesh/Router.h</code> · <code>FloodingRouter.h</code> · <code>NextHopRouter.h</code> · <code>ReliableRouter.h</code></p>
+    </div>
+    <div style="font-size:0.8em">
+      <h3 data-i18n="slide31_flow_heading">Packet Flow</h3>
+      <ul style="line-height:2.1">
+        <li data-i18n="slide31_flow1">Radio RX → <code>enqueueReceivedMessage()</code></li>
+        <li data-i18n="slide31_flow2"><code>Router::runOnce()</code> processes queue</li>
+        <li data-i18n="slide31_flow3">Deliver to local modules via <code>MeshService</code></li>
+        <li data-i18n="slide31_flow4">Rebroadcast? → <code>perhapsRebroadcast()</code></li>
+        <li data-i18n="slide31_flow5">TX: <code>sendLocal()</code> → radio TX queue</li>
+      </ul>
+      <br>
+      <div class="card" style="font-size:0.75em; padding:0.6em 1em">
+        <span data-i18n="slide31_thread_note">Router is an <code>OSThread</code> — runs cooperatively via <code>ArduinoThread</code> scheduler</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SLIDE 32: MODULE / PLUGIN SYSTEM ===================== -->
+<section>
+  <h2 data-i18n="slide32_heading">Module / Plugin System</h2>
+  <div class="two-col" style="gap:2em">
+    <div>
+      <h3 data-i18n="slide32_lifecycle_heading">MeshModule Lifecycle</h3>
+      <pre><code class="language-cpp" style="font-size:0.65em; line-height:1.7">class MyModule : public MeshModule {
+  MyModule() : MeshModule("MyModule") {}
+  // constructor auto-registers to modules[]
+
+  ProcessMessage
+  handleReceived(const MeshPacket &p) {
+    if (p.decoded.portnum != MY_PORT)
+      return ProcessMessage::CONTINUE;
+    // handle packet ...
+    return ProcessMessage::STOP;
+  }
+};</code></pre>
+      <br>
+      <p class="dim" style="font-size:0.72em" data-i18n="slide32_dispatch">Dispatch: <code>MeshModule::callModules()</code> iterates all registered modules by portnum</p>
+    </div>
+    <div style="font-size:0.75em">
+      <h3 data-i18n="slide32_modules_heading">Key Modules</h3>
+      <table>
+        <tbody>
+          <tr><td><span class="highlight">TextMessage</span></td><td data-i18n="slide32_mod_text">channel &amp; DM text</td></tr>
+          <tr><td><span class="highlight">Position</span></td><td data-i18n="slide32_mod_pos">GPS broadcast</td></tr>
+          <tr><td><span class="highlight">Telemetry</span></td><td data-i18n="slide32_mod_telem">sensors &amp; battery</td></tr>
+          <tr><td><span class="highlight">Admin</span></td><td data-i18n="slide32_mod_admin">device config via mesh</td></tr>
+          <tr><td><span class="highlight">StoreForward</span></td><td data-i18n="slide32_mod_sf">buffer for offline nodes</td></tr>
+          <tr><td><span class="highlight">SerialModule</span></td><td data-i18n="slide32_mod_serial">UART bridge</td></tr>
+          <tr><td><span class="highlight">TraceRoute</span></td><td data-i18n="slide32_mod_trace">path tracing</td></tr>
+          <tr><td><span class="highlight">NeighborInfo</span></td><td data-i18n="slide32_mod_neighbor">topology map</td></tr>
+        </tbody>
+      </table>
+      <p class="dim" style="font-size:0.8em; margin-top:0.8em" data-i18n="slide32_exclude">Excluded per-board via <code>-DMESHTASTIC_EXCLUDE_*</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SLIDE 33: PLATFORM HAL ===================== -->
+<section>
+  <h2 data-i18n="slide33_heading">Platform HAL</h2>
+  <div class="two-col" style="gap:2em">
+    <div>
+      <pre><code class="language-text" style="font-size:0.65em; line-height:1.8">src/platform/
+├── esp32/
+│   WiFi · NimBLE · OTA · Crypto
+├── nrf52/
+│   BLE SoftDevice · UF2 boot
+├── rp2xx0/
+│   USB · Pico SDK
+├── stm32wl/
+│   built-in radio
+└── portduino/
+    Linux POSIX simulation</code></pre>
+    </div>
+    <div style="font-size:0.8em">
+      <h3 data-i18n="slide33_abstractions_heading">Common Abstractions</h3>
+      <ul style="line-height:2.1">
+        <li data-i18n="slide33_abs1"><code>PowerHAL</code> — sleep, deep-sleep, battery</li>
+        <li data-i18n="slide33_abs2"><code>CryptoEngine</code> — AES-CTR, x25519</li>
+        <li data-i18n="slide33_abs3"><code>FSCommon</code> — LittleFS / SPIFFS abstraction</li>
+        <li data-i18n="slide33_abs4"><code>SPILock</code> — shared SPI bus arbitration</li>
+        <li data-i18n="slide33_abs5"><code>RadioInterface</code> → <code>RadioLibInterface</code> → chipset drivers</li>
+      </ul>
+      <br>
+      <div class="card" style="font-size:0.75em; padding:0.6em 1em">
+        <span data-i18n="slide33_note">Compile-time selection: <code>#ifdef ARCH_ESP32</code>, <code>ARCH_NRF52</code>, <code>ARCH_RP2040</code></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SLIDE 34: KEY DATA STRUCTURES ===================== -->
+<section>
+  <h2 data-i18n="slide34_heading">Key Data Structures</h2>
+  <div class="two-col" style="gap:2em">
+    <div>
+      <h3 data-i18n="slide34_header_heading">PacketHeader (12 bytes)</h3>
+      <pre><code class="language-cpp" style="font-size:0.62em; line-height:1.7">struct PacketHeader {
+  NodeNum to;         // 4B destination
+  NodeNum from;       // 4B source
+  PacketId id;        // 4B unique ID
+  uint8_t flags;      // hop_limit [2:0]
+                      // want_ack  [3]
+                      // via_mqtt  [4]
+                      // hop_start [7:5]
+  uint8_t channel;    // channel hint
+  uint8_t next_hop;   // last byte only
+  uint8_t relay_node; // last byte only
+};</code></pre>
+    </div>
+    <div style="font-size:0.8em">
+      <h3 data-i18n="slide34_nodedb_heading">NodeDB Segments</h3>
+      <ul style="line-height:1.9">
+        <li><code>CONFIG</code> <span class="dim" data-i18n="slide34_seg_config">— radio, device, display settings</span></li>
+        <li><code>MODULECONFIG</code> <span class="dim" data-i18n="slide34_seg_module">— per-module config</span></li>
+        <li><code>CHANNELS</code> <span class="dim" data-i18n="slide34_seg_channels">— PSK &amp; channel roles</span></li>
+        <li><code>DEVICESTATE</code> <span class="dim" data-i18n="slide34_seg_state">— runtime state</span></li>
+        <li><code>NODEDATABASE</code> <span class="dim" data-i18n="slide34_seg_nodes">— known peer nodes</span></li>
+      </ul>
+      <br>
+      <h3 data-i18n="slide34_radio_heading">Radio Chipset Chain</h3>
+      <pre><code class="language-text" style="font-size:0.7em">RadioInterface
+  └─ RadioLibInterface (RadioLib v7.6)
+       ├─ SX126xInterface (SX1262/1268)
+       ├─ LR11x0Interface (LR1110/1120)
+       └─ RF95Interface   (RFM95W)</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SLIDE 35: WHERE TO START ===================== -->
+<section>
+  <h2 data-i18n="slide35_heading">Where to Start</h2>
+  <br>
+  <div class="three-col">
+    <div class="card">
+      <h3 data-i18n="slide35_embedded_heading">Embedded / HW</h3>
+      <ul style="font-size:0.75em; line-height:1.9">
+        <li><code>variants/*/platformio.ini</code></li>
+        <li><code>src/platform/[mcu]/</code></li>
+        <li><code>src/mesh/MeshRadio.h</code></li>
+        <li><code>src/detect/ScanI2C.h</code></li>
+        <li><span class="dim" data-i18n="slide35_emb_tip">Add a board: create a new <code>variants/</code> dir</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 data-i18n="slide35_protocol_heading">Protocol / Networking</h3>
+      <ul style="font-size:0.75em; line-height:1.9">
+        <li><code>src/mesh/Router.h</code></li>
+        <li><code>src/mesh/FloodingRouter.h</code></li>
+        <li><code>src/mesh/Channels.h</code></li>
+        <li><code>src/mqtt/MQTT.h</code></li>
+        <li><span class="dim" data-i18n="slide35_proto_tip">Protobuf defs: <code>protobufs/meshtastic/</code></span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 data-i18n="slide35_sw_heading">SW / Application</h3>
+      <ul style="font-size:0.75em; line-height:1.9">
+        <li><code>src/mesh/MeshModule.h</code></li>
+        <li><code>src/mesh/MeshService.h</code></li>
+        <li><code>src/mesh/NodeDB.h</code></li>
+        <li><code>src/modules/TextMessageModule</code></li>
+        <li><span class="dim" data-i18n="slide35_sw_tip">Add a feature: subclass <code>MeshModule</code></span></li>
+      </ul>
+    </div>
+  </div>
+  <br>
+  <p style="text-align:center; font-size:0.75em">
+    <span class="fw-tip" data-tip="ISO C++ standard (2017) — structured bindings, if constexpr, std::optional; the dialect used throughout the firmware">C++17</span>
+    <span class="dim"> &middot; </span>
+    <span class="fw-tip" data-tip="Cross-platform embedded build system &amp; IDE — manages toolchains, libraries, and board configs for 1000+ boards via platformio.ini">PlatformIO</span>
+    <span class="dim"> &middot; </span>
+    <span class="fw-tip" data-tip="Universal radio module library for Arduino — abstracts SX126x, LR11x0, RF95 and 50+ other chipsets behind a common API">RadioLib</span>
+    <span class="dim"> &middot; </span>
+    <span class="fw-tip" data-tip="Lightweight Protocol Buffers implementation for embedded C — all mesh packets are serialized/deserialized with nanopb (no heap by default)">nanopb</span>
+    <span class="dim"> &middot; </span>
+    <span class="fw-tip" data-tip="Cooperative threading scheduler (Meshtastic fork) — every subsystem subclasses OSThread and runs via runOnce() in the main loop">ArduinoThread</span>
+  </p>
+</section>
+
 </div>
 </div>
 

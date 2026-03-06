@@ -189,6 +189,41 @@
   }
 }
 
+/* Firmware deep-dive tooltips */
+.reveal .fw-tip {
+  color: var(--mesh-green);
+  font-weight: 600;
+  cursor: help;
+  border-bottom: 1px dashed rgba(103, 234, 148, 0.5);
+  position: relative;
+}
+.reveal .fw-tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 260px;
+  background: #0d1b2a;
+  border: 1px solid rgba(103, 234, 148, 0.35);
+  color: #ccc;
+  font-size: 0.78em;
+  font-weight: 400;
+  line-height: 1.4;
+  padding: 0.5em 0.8em;
+  border-radius: 6px;
+  white-space: normal;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 200;
+}
+.reveal .fw-tip:hover::after {
+  opacity: 1;
+}
+
 /* Language menu */
 #lang-menu {
   position: fixed;
