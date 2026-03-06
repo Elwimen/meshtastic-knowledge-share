@@ -333,9 +333,43 @@
       font-size: 0.72rem;
     }
     footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── top bar ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 200;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 5vw;
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    .topbar a.back {
+      color: var(--muted); text-decoration: none; font-size: 0.8rem;
+      display: flex; align-items: center; gap: 5px; transition: color 0.15s;
+    }
+    .topbar a.back::before { content: '←'; }
+    .topbar a.back:hover { color: var(--accent); }
+    .topbar .doc-title { font-size: 0.85rem; font-weight: 700; color: var(--accent); letter-spacing: 0.04em; flex: 1; }
+    .topbar .file-links { display: flex; gap: 8px; flex-wrap: wrap; }
+    .topbar .file-links a {
+      font-size: 0.72rem; color: var(--muted); text-decoration: none;
+      padding: 3px 10px; border: 1px solid var(--border); border-radius: 4px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .topbar .file-links a:hover, .topbar .file-links a.active { color: var(--accent); border-color: var(--accent); }
   </style>
 </head>
 <body>
+
+<div class="topbar">
+  <a class="back" href="../index.html">Presentation</a>
+  <span class="doc-title">Packet Diagram</span>
+  <nav class="file-links">
+    <a href="viewer.html?file=MESHTASTIC_SENSORS.md">Sensors</a>
+    <a href="viewer.html?file=MESHTASTIC_DEVICES_MODULES.md">Devices &amp; Modules</a>
+    <a href="MESHTASTIC_PACKET_DIAGRAM.html" class="active">Packet Diagram</a>
+    <a href="MESHTASTIC_SEQUENCE_DIAGRAM.html">Sequence Diagram</a>
+  </nav>
+</div>
 
 <h1>Meshtastic Packet Structure</h1>
 <p class="subtitle">Physical → Network → Application layer breakdown &nbsp;|&nbsp; source: firmware/protobufs/meshtastic/</p>
