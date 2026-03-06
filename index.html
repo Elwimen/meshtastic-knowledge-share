@@ -27,34 +27,54 @@
 <!-- ===================== SLIDE 2: AGENDA ===================== -->
 <section>
   <h2 data-i18n="slide2_heading">Agenda</h2>
-  <div class="two-col" style="gap:3em; align-items:start">
+  <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:2em; align-items:start">
     <div>
       <h3 data-i18n="slide2_col1_heading">Overview</h3>
-      <ol style="font-size:0.8em; line-height:1.85">
-        <li><a class="agenda-link" href="#/the-problem"><span data-i18n="slide2_item1">The Problem &mdash; why off-grid communication matters</span></a></li>
-        <li><a class="agenda-link" href="#/what-is-meshtastic"><span data-i18n="slide2_item2">What is Meshtastic?</span></a></li>
-        <li><a class="agenda-link" href="#/lora-technology"><span data-i18n="slide2_item3">LoRa Technology primer</span></a></li>
-        <li><a class="agenda-link" href="#/how-mesh-works"><span data-i18n="slide2_item4">How mesh networking works</span></a></li>
-        <li><a class="agenda-link" href="#/protocol-architecture"><span data-i18n="slide2_item5">Protocol architecture &amp; routing</span></a></li>
-        <li><a class="agenda-link" href="#/encryption"><span data-i18n="slide2_item6">Encryption &amp; security</span></a></li>
-        <li><a class="agenda-link" href="#/hardware-ecosystem"><span data-i18n="slide2_item7">Hardware ecosystem</span></a></li>
-        <li><a class="agenda-link" href="#/software-ecosystem"><span data-i18n="slide2_item8">Software ecosystem &mdash; firmware, apps, web</span></a></li>
-        <li><a class="agenda-link" href="#/range-records"><span data-i18n="slide2_item9">Use cases &amp; range records</span></a></li>
-        <li><a class="agenda-link" href="#/getting-started"><span data-i18n="slide2_item10">Getting started &amp; resources</span></a></li>
+      <ol style="font-size:0.72em; line-height:1.65">
+        <li><a class="agenda-link" href="#/the-problem">The Problem</a></li>
+        <li><a class="agenda-link" href="#/what-is-meshtastic">What is Meshtastic?</a></li>
+        <li><a class="agenda-link" href="#/lora-technology">LoRa Technology primer</a></li>
+        <li><a class="agenda-link" href="#/lora-vs-others">LoRa vs Others</a></li>
+        <li><a class="agenda-link" href="#/frequency-bands">Frequency Bands</a></li>
+        <li><a class="agenda-link" href="#/how-mesh-works">How mesh networking works</a></li>
+        <li><a class="agenda-link" href="#/message-flow">Message Flow</a></li>
+        <li><a class="agenda-link" href="#/protocol-architecture">Protocol architecture &amp; routing</a></li>
+        <li><a class="agenda-link" href="#/packet-structure">Packet Structure</a></li>
+        <li><a class="agenda-link" href="#/encryption">Encryption &amp; security</a></li>
+        <li><a class="agenda-link" href="#/radio-presets">Radio Presets</a></li>
+        <li><a class="agenda-link" href="#/hardware-ecosystem">Hardware ecosystem</a></li>
+        <li><a class="agenda-link" href="#/popular-devices">Popular Devices</a></li>
+      </ol>
+    </div>
+    <div>
+      <h3>&nbsp;</h3>
+      <ol start="14" style="font-size:0.72em; line-height:1.65">
+        <li><a class="agenda-link" href="#/software-ecosystem">Software ecosystem</a></li>
+        <li><a class="agenda-link" href="#/repos-overview">Repos Overview</a></li>
+        <li><a class="agenda-link" href="#/mesh-scaling">Mesh Scaling</a></li>
+        <li><a class="agenda-link" href="#/range-records">Range Records</a></li>
+        <li><a class="agenda-link" href="#/use-cases">Use Cases</a></li>
+        <li><a class="agenda-link" href="#/modules">Modules</a></li>
+        <li><a class="agenda-link" href="#/mqtt-bridge">MQTT Bridge</a></li>
+        <li><a class="agenda-link" href="#/getting-started">Getting started</a></li>
+        <li><a class="agenda-link" href="#/node-roles">Node Roles</a></li>
+        <li><a class="agenda-link" href="#/why-it-matters">Why it Matters</a></li>
+        <li><a class="agenda-link" href="#/resources">Resources &amp; Links</a></li>
+        <li><a class="agenda-link" href="#/qa">Q&amp;A</a></li>
       </ol>
     </div>
     <div>
       <h3 data-i18n="slide2_col2_heading" style="color:#6ea8fe">Firmware Deep Dive</h3>
-      <ol style="font-size:0.8em; line-height:1.85">
-        <li><a class="agenda-link agenda-link--fw" href="#/firmware-deep-dive"><span data-i18n="slide2_fw1">Firmware architecture &mdash; intro</span></a></li>
-        <li><a class="agenda-link agenda-link--fw" href="#/codebase-map"><span data-i18n="slide2_fw2">Codebase map</span></a></li>
-        <li><a class="agenda-link agenda-link--fw" href="#/build-system"><span data-i18n="slide2_fw3">Build system &amp; hardware variants</span></a></li>
-        <li><a class="agenda-link agenda-link--fw" href="#/init-sequence"><span data-i18n="slide2_fw4">Startup &amp; init sequence</span></a></li>
-        <li><a class="agenda-link agenda-link--fw" href="#/router-hierarchy"><span data-i18n="slide2_fw5">Router hierarchy</span></a></li>
-        <li><a class="agenda-link agenda-link--fw" href="#/module-system"><span data-i18n="slide2_fw6">Module / plugin system</span></a></li>
-        <li><a class="agenda-link agenda-link--fw" href="#/platform-hal"><span data-i18n="slide2_fw7">Platform HAL</span></a></li>
-        <li><a class="agenda-link agenda-link--fw" href="#/data-structures"><span data-i18n="slide2_fw8">Key data structures</span></a></li>
-        <li><a class="agenda-link agenda-link--fw" href="#/where-to-start"><span data-i18n="slide2_fw9">Where to start</span></a></li>
+      <ol style="font-size:0.72em; line-height:1.65">
+        <li><a class="agenda-link agenda-link--fw" href="#/firmware-deep-dive">Firmware architecture &mdash; intro</a></li>
+        <li><a class="agenda-link agenda-link--fw" href="#/codebase-map">Codebase map</a></li>
+        <li><a class="agenda-link agenda-link--fw" href="#/build-system">Build system &amp; hardware variants</a></li>
+        <li><a class="agenda-link agenda-link--fw" href="#/init-sequence">Startup &amp; init sequence</a></li>
+        <li><a class="agenda-link agenda-link--fw" href="#/router-hierarchy">Router hierarchy</a></li>
+        <li><a class="agenda-link agenda-link--fw" href="#/module-system">Module / plugin system</a></li>
+        <li><a class="agenda-link agenda-link--fw" href="#/platform-hal">Platform HAL</a></li>
+        <li><a class="agenda-link agenda-link--fw" href="#/data-structures">Key data structures</a></li>
+        <li><a class="agenda-link agenda-link--fw" href="#/where-to-start">Where to start</a></li>
       </ol>
     </div>
   </div>
@@ -140,7 +160,7 @@
 </section>
 
 <!-- ===================== SLIDE 6: LORA vs OTHERS ===================== -->
-<section>
+<section id="lora-vs-others">
   <h2 data-i18n="slide6_heading">LoRa vs Other Wireless Technologies</h2>
   <br>
   <div class="table-wrap">
@@ -204,7 +224,7 @@
 </section>
 
 <!-- ===================== SLIDE 7: FREQUENCY BANDS ===================== -->
-<section>
+<section id="frequency-bands">
   <h2 data-i18n="slide7_heading">Frequency Bands by Region</h2>
   <br>
   <div class="table-wrap">
@@ -285,7 +305,7 @@
 </section>
 
 <!-- ===================== SLIDE 9: MESSAGE FLOW ===================== -->
-<section>
+<section id="message-flow">
   <h2 data-i18n="slide9_heading">Message Flow &mdash; Step by Step</h2>
   <br>
   <div style="font-size:0.85em;">
@@ -354,7 +374,7 @@
 </section>
 
 <!-- ===================== SLIDE 11: PACKET STRUCTURE ===================== -->
-<section>
+<section id="packet-structure">
   <h2 data-i18n="slide11_heading">Packet Structure</h2>
   <br>
   <div class="svg-diagram">
@@ -447,7 +467,7 @@
 </section>
 
 <!-- ===================== SLIDE 13: RADIO PRESETS ===================== -->
-<section>
+<section id="radio-presets">
   <h2 data-i18n="slide13_heading">LoRa Radio Presets</h2>
   <br>
   <div class="table-wrap">
@@ -517,7 +537,7 @@
 </section>
 
 <!-- ===================== SLIDE 15: POPULAR DEVICES ===================== -->
-<section>
+<section id="popular-devices">
   <h2 data-i18n="slide15_heading">Popular Devices</h2>
   <br>
   <div class="table-wrap">
@@ -594,7 +614,7 @@
 </section>
 
 <!-- ===================== SLIDE 17: REPOS OVERVIEW ===================== -->
-<section>
+<section id="repos-overview">
   <h2 data-i18n="slide17_heading">Open-Source Repositories</h2>
   <br>
   <div class="table-wrap">
@@ -650,7 +670,7 @@
 </section>
 
 <!-- ===================== SLIDE 18: MESH SCALING ===================== -->
-<section>
+<section id="mesh-scaling">
   <h2 data-i18n="slide18_heading">Mesh Network Scaling</h2>
   <div class="two-col">
     <div>
@@ -719,7 +739,7 @@
 </section>
 
 <!-- ===================== SLIDE 20: USE CASES ===================== -->
-<section>
+<section id="use-cases">
   <h2 data-i18n="slide20_heading">Use Cases</h2>
   <br>
   <div class="three-col">
@@ -778,7 +798,7 @@
 </section>
 
 <!-- ===================== SLIDE 21: MODULES ===================== -->
-<section>
+<section id="modules">
   <h2 data-i18n="slide21_heading">Built-in Modules</h2>
   <br>
   <div class="two-col">
@@ -806,7 +826,7 @@
 </section>
 
 <!-- ===================== SLIDE 22: MQTT BRIDGE ===================== -->
-<section>
+<section id="mqtt-bridge">
   <h2 data-i18n="slide22_heading">MQTT Bridge &mdash; Connecting to the Internet</h2>
   <br>
   <div class="svg-diagram">
@@ -886,7 +906,7 @@
 </section>
 
 <!-- ===================== SLIDE 24: NODE ROLES ===================== -->
-<section>
+<section id="node-roles">
   <h2 data-i18n="slide24_heading">Device Roles</h2>
   <br>
   <div class="table-wrap">
@@ -911,7 +931,7 @@
 </section>
 
 <!-- ===================== SLIDE 25: WHY IT MATTERS ===================== -->
-<section>
+<section id="why-it-matters">
   <h2 data-i18n="slide25_heading">Why Meshtastic Matters</h2>
   <br>
   <div class="two-col">
@@ -942,7 +962,7 @@
 </section>
 
 <!-- ===================== SLIDE 26: RESOURCES ===================== -->
-<section>
+<section id="resources">
   <h2 data-i18n="slide26_heading">Resources &amp; Links</h2>
   <br>
   <div class="two-col">
@@ -981,7 +1001,7 @@
 </section>
 
 <!-- ===================== SLIDE 27: Q&A ===================== -->
-<section class="center">
+<section id="qa" class="center">
   <h2 data-i18n="slide27_heading">Questions?</h2>
   <br>
   <p style="font-size:1.2em; color:#aaa" data-i18n="slide27_thanks">Thank you!</p>
