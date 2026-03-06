@@ -365,7 +365,7 @@
 <body>
 
 <h1>Meshtastic Node Communication Sequences</h1>
-<p class="subtitle">Three scenarios: broadcast flooding, unicast via CLIENT relay, unicast via ROUTER relay</p>
+<p class="subtitle">Five scenarios: broadcast flooding, unicast via CLIENT / ROUTER / ROUTER_LATE relay, selective relay via CLIENT_BASE</p>
 
 <!-- ── topology ── -->
 <div class="topology">
@@ -409,6 +409,30 @@
       <span class="topo-note">asymmetric paths — forward via N2, return via N4</span>
     </div>
   </div>
+  <div class="topo-row">
+    <span class="topo-label">S4 (ROUTER_LATE)</span>
+    <div class="topo-nodes">
+      <span class="node-box sender">N1</span>
+      <span class="topo-arrow">↔</span>
+      <span class="node-box relay">N2 (ROUTER)</span>
+      <span class="topo-arrow">&</span>
+      <span class="node-box relay">N3 (ROUTER_LATE)</span>
+      <span class="topo-arrow">↔</span>
+      <span class="node-box dest">N4</span>
+      <span class="topo-note">N1 and N4 out of range — N2 relays first, N3 fires last to fill gaps</span>
+    </div>
+  </div>
+  <div class="topo-row">
+    <span class="topo-label">S5 (CLIENT_BASE)</span>
+    <div class="topo-nodes">
+      <span class="node-box sender">N1 (favorited)</span>
+      <span class="topo-arrow">↔</span>
+      <span class="node-box relay">N2 (CLIENT_BASE)</span>
+      <span class="topo-arrow">↔</span>
+      <span class="node-box dest">N4</span>
+      <span class="topo-note">N3 (non-favorited) also in range — CLIENT_BASE selectively prioritises favorited node traffic</span>
+    </div>
+  </div>
 </div>
 
 <!-- ── tab bar ── -->
@@ -417,6 +441,8 @@
   <button class="tab-btn" data-panel="s2c">CLIENT — Client Relay</button>
   <button class="tab-btn" data-panel="s2r">ROUTER — Router Relay</button>
   <button class="tab-btn" data-panel="s3">Trace Route</button>
+  <button class="tab-btn" data-panel="s2rl">ROUTER_LATE — Gap-Fill Relay</button>
+  <button class="tab-btn" data-panel="s2cb">CLIENT_BASE — Base Station Relay</button>
 </div>
 
 <!-- ════════════════════════════════════════════
@@ -680,53 +706,204 @@
 </div>
 
 <!-- ════════════════════════════════════════════
+     PANEL S2_router_late
+════════════════════════════════════════════ -->
+<div id="panel-s2rl" class="panel">
+
+  <div class="diagram-card">
+    <div class="diagram-header">
+      <span class="diagram-title">S4 — Direct Message via ROUTER_LATE Relay</span>
+      <span class="badge router">Node 2 = ROUTER (primary)</span>
+      <span class="badge" style="border-color:#a78bfa;color:#a78bfa">Node 3 = ROUTER_LATE</span>
+      <span class="badge">gap-fill relay, always fires last</span>
+    </div>
+    <div class="diagram-body" id="diag-s2rl"><div class="diagram-loading">Rendering…</div></div>
+  </div>
+
+  <div class="facts-grid">
+    <div class="fact-card">
+      <h4>ROUTER_LATE Role Purpose</h4>
+      <ul class="fact-list">
+        <li><span class="key">use case</span>       <span class="val">Bridge terrain gaps; secondary/backup coverage</span></li>
+        <li><span class="key">priority</span>        <span class="val warn">always yields to ROUTER and CLIENT</span></li>
+        <li><span class="key">guarantee</span>       <span class="val good">always relays — never cancels</span></li>
+        <li><span class="key">timing</span>          <span class="val warn">clamped to worst-case late window on dupe</span></li>
+        <li><span class="key">proto role id</span>   <span class="val info">role = 11</span></li>
+      </ul>
+    </div>
+
+    <div class="fact-card">
+      <h4>ROUTER_LATE Relay Behaviour</h4>
+      <ul class="fact-list">
+        <li><span class="key">initial delay</span>   <span class="val warn">CLIENT late: 2×<span class="tip" data-tip="Contention Window Maximum">CWmax</span>×slot + rand(2^CWsize)×slot</span></li>
+        <li><span class="key">cancel on dupe</span>  <span class="val good">false — roleAllowsCancelingDupe=false</span></li>
+        <li><span class="key">on dupe heard</span>   <span class="val warn">clampToLateRebroadcastWindow() — TX moved to worst-case</span></li>
+        <li><span class="key">worst-case delay</span><span class="val">(2×CWmax + 2^CWsize) × slot</span></li>
+        <li><span class="key">code</span>            <span class="val info"><span class="tip" data-tip="Broadcast flood relay logic. src/mesh/">FloodingRouter.cpp</span>:129</span></li>
+      </ul>
+    </div>
+
+    <div class="fact-card">
+      <h4>vs. ROUTER</h4>
+      <ul class="fact-list">
+        <li><span class="key">relay order</span>     <span class="val warn">ROUTER fires first, ROUTER_LATE fires last</span></li>
+        <li><span class="key">cancels on dupe?</span><span class="val good">neither cancels — both always relay</span></li>
+        <li><span class="key">shouldRebroadcastEarly</span><span class="val warn">ROUTER: true / ROUTER_LATE: false</span></li>
+        <li><span class="key">on dupe: ROUTER</span> <span class="val">no extra action (already early)</span></li>
+        <li><span class="key">on dupe: ROUT_LATE</span><span class="val warn">clamps TX to worst-case late window</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="steps">
+    <h4>Step-by-Step</h4>
+    <ol class="step-list">
+      <li>N1 (CLIENT) sends DM to N4. No route known → <code>FloodingRouter</code>. Both N2 (ROUTER) and N3 (ROUTER_LATE) receive it; N4 is out of direct range.</li>
+      <li>N2 (ROUTER): <code>shouldRebroadcastEarlyLikeRouter()=true</code> → <span class="highlight">short priority delay</span> <code>rand(0, 2×CWsize)×slot</code>. <code>roleAllowsCancelingDupe=false</code>.</li>
+      <li>N3 (ROUTER_LATE): <code>shouldRebroadcastEarlyLikeRouter()=false</code> → queues at <span class="highlight">CLIENT late delay</span> <code>2×CWmax×slot + rand</code>. <code>roleAllowsCancelingDupe=false</code>.</li>
+      <li>N2 fires first (ROUTER priority window). Both N4 and N3 hear N2's relay.</li>
+      <li><span class="highlight">N3 hears dupe from N2.</span> <code>roleAllowsCancelingDupe=false</code> → <strong>does NOT cancel</strong>. Instead, <code>clampToLateRebroadcastWindow()</code> is called. N3's pending TX is clamped to the worst-case late time: <code>millis() + (2×CWmax + 2^CWsize)×slot</code>.</li>
+      <li>N3 fires last — after the entire late window has elapsed. This ensures ROUTER_LATE never races with primary ROUTERs. Any node that N2 couldn't reach (terrain shadow, RF dead zone) still gets covered by N3's delayed relay.</li>
+      <li>N4 receives the packet from N2 (and possibly N3, suppressed by dedup). ACK travels back via the same relay chain. Route learning is identical to CLIENT/ROUTER scenarios.</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     PANEL S2_client_base
+════════════════════════════════════════════ -->
+<div id="panel-s2cb" class="panel">
+
+  <div class="diagram-card">
+    <div class="diagram-header">
+      <span class="diagram-title">S5 — Broadcast via CLIENT_BASE (Selective Base Relay)</span>
+      <span class="badge" style="border-color:#f472b6;color:#f472b6">Node 2 = CLIENT_BASE</span>
+      <span class="badge client">Node 1 = favorited CLIENT (indoor/weak)</span>
+      <span class="badge">ROUTER_LATE for favorited nodes, CLIENT for all others</span>
+    </div>
+    <div class="diagram-body" id="diag-s2cb"><div class="diagram-loading">Rendering…</div></div>
+  </div>
+
+  <div class="facts-grid">
+    <div class="fact-card">
+      <h4>CLIENT_BASE Role Purpose</h4>
+      <ul class="fact-list">
+        <li><span class="key">use case</span>       <span class="val">Attic/roof base node serving weaker indoor nodes</span></li>
+        <li><span class="key">favorited packets</span><span class="val good">ROUTER_LATE behaviour — never cancel, clamp to late</span></li>
+        <li><span class="key">other packets</span>  <span class="val warn">CLIENT behaviour — cancels on dupe</span></li>
+        <li><span class="key">visibility</span>     <span class="val">visible in Nodes list (unlike ROUTER)</span></li>
+        <li><span class="key">proto role id</span>  <span class="val info">role = 12</span></li>
+      </ul>
+    </div>
+
+    <div class="fact-card">
+      <h4>Favorited-Node Packet Path</h4>
+      <ul class="fact-list">
+        <li><span class="key">check</span>          <span class="val">isFromOrToFavoritedNode(p) → true</span></li>
+        <li><span class="key">cancel on dupe</span> <span class="val good">false — roleAllowsCancelingDupe=false</span></li>
+        <li><span class="key">on dupe</span>        <span class="val warn">clampToLateRebroadcastWindow() — worst-case late</span></li>
+        <li><span class="key">result</span>         <span class="val good">weaker node's messages always relayed by base</span></li>
+        <li><span class="key">code</span>           <span class="val info"><span class="tip" data-tip="src/mesh/">FloodingRouter.cpp</span>:110–134</span></li>
+      </ul>
+    </div>
+
+    <div class="fact-card">
+      <h4>Non-Favorited Packet Path</h4>
+      <ul class="fact-list">
+        <li><span class="key">check</span>          <span class="val warn">isFromOrToFavoritedNode(p) → false</span></li>
+        <li><span class="key">cancel on dupe</span> <span class="val warn">true — acts like plain CLIENT</span></li>
+        <li><span class="key">on dupe</span>        <span class="val warn">cancelSending() — relay dropped</span></li>
+        <li><span class="key">result</span>         <span class="val">airtime conserved for non-priority traffic</span></li>
+        <li><span class="key">code</span>           <span class="val info"><span class="tip" data-tip="src/mesh/">FloodingRouter.cpp</span>:117–118</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="steps">
+    <h4>Step-by-Step</h4>
+    <ol class="step-list">
+      <li>N2 is a CLIENT_BASE attic node. It has manually favorited N1 (a weaker indoor node) — <code>nodeDB[N1].is_favorite=true</code>.</li>
+      <li>N1 (favorited) sends a broadcast. N2 (CLIENT_BASE) and N3 (regular CLIENT) both receive it.</li>
+      <li>N2 calls <code>isFromOrToFavoritedNode(p)</code> → <strong>true</strong> (N1 is favorited). N2 applies ROUTER_LATE rules: <code>roleAllowsCancelingDupe=false</code>, queues at CLIENT late delay.</li>
+      <li>N3 (CLIENT) also queues a relay at CLIENT late delay. <code>roleAllowsCancelingDupe=true</code>.</li>
+      <li>N3 fires first (random within the late window). N2 hears N3's relay — <code>isFromOrToFavoritedNode</code> is still <strong>true</strong>. N2 calls <code>clampToLateRebroadcastWindow()</code> instead of canceling. N3 itself suppresses its own re-relay on hearing N2.</li>
+      <li>N2 fires at the worst-case late window. The better-positioned attic node ensures N1's message propagates further, amplifying coverage for the weaker indoor node.</li>
+      <li><span class="highlight">Non-favorited scenario (N4 sends):</span> N2 again queues at CLIENT late delay, but now <code>isFromOrToFavoritedNode=false</code> → <code>roleAllowsCancelingDupe=true</code>. If N3 relays first, N2 calls <code>cancelSending()</code> and drops its relay — conserving airtime for the non-priority packet.</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
      COMPARISON TABLE
 ════════════════════════════════════════════ -->
 <div class="comparison">
-  <h2>CLIENT vs ROUTER Relay — Key Differences</h2>
+  <h2>Relay Role Comparison — CLIENT · ROUTER · ROUTER_LATE · CLIENT_BASE</h2>
   <table class="cmp-table">
     <thead>
       <tr>
         <th>Behaviour</th>
         <th>CLIENT</th>
         <th>ROUTER</th>
+        <th style="color:#a78bfa;font-family:monospace;font-size:0.76rem">ROUTER_LATE</th>
+        <th style="color:#f472b6;font-family:monospace;font-size:0.76rem">CLIENT_BASE</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td class="attr">Relay delay formula</td>
-        <td class="client-col">2×<span class="tip" data-tip="Contention Window Maximum — upper bound on the CLIENT relay back-off slot count. Larger value = longer potential delay before rebroadcasting.">CWmax</span>×slot + rand(<span class="tip" data-tip="Contention Window size — random jitter range in the relay back-off formula. Spreads relay timing across nodes to reduce simultaneous transmissions.">CWsize</span>)×slot<br><span style="color:var(--muted);font-size:0.7rem">long back-off window</span></td>
-        <td class="router-col">rand(0, 2×<span class="tip" data-tip="Contention Window size — random jitter range in the relay back-off formula. Spreads relay timing across nodes to reduce simultaneous transmissions.">CWsize</span>) × slot<br><span style="color:var(--muted);font-size:0.7rem">short priority window</span></td>
-      </tr>
-      <tr>
-        <td class="attr">Cancels relay if another node relays first</td>
-        <td class="client-col">YES — roleAllowsCancelingDupe=true<br>calls cancelSending()</td>
-        <td class="router-col">NO — roleAllowsCancelingDupe=false<br>always relays at least once</td>
+        <td class="attr">Initial relay delay</td>
+        <td class="client-col">2×<span class="tip" data-tip="Contention Window Maximum">CWmax</span>×slot + rand(2^<span class="tip" data-tip="Contention Window size">CWsize</span>)×slot<br><span style="color:var(--muted);font-size:0.7rem">long back-off window</span></td>
+        <td class="router-col">rand(0, 2×<span class="tip" data-tip="Contention Window size">CWsize</span>) × slot<br><span style="color:var(--muted);font-size:0.7rem">short priority window</span></td>
+        <td style="color:#a78bfa;font-family:monospace;font-size:0.76rem">2×CWmax×slot + rand(2^CWsize)×slot<br><span style="color:var(--muted);font-size:0.7rem">CLIENT late window (initially)</span></td>
+        <td style="color:#f472b6;font-family:monospace;font-size:0.76rem">2×CWmax×slot + rand(2^CWsize)×slot<br><span style="color:var(--muted);font-size:0.7rem">CLIENT late window always</span></td>
       </tr>
       <tr>
         <td class="attr">shouldRebroadcastEarlyLikeRouter()</td>
         <td class="client-col">false</td>
         <td class="router-col">true</td>
+        <td style="color:#a78bfa;font-family:monospace;font-size:0.76rem">false</td>
+        <td style="color:#f472b6;font-family:monospace;font-size:0.76rem">false</td>
       </tr>
       <tr>
-        <td class="attr">Broadcasts NodeInfo / Position / Telemetry</td>
+        <td class="attr">roleAllowsCancelingDupe</td>
+        <td class="client-col">true — cancelSending() on dupe</td>
+        <td class="router-col">false — never cancels</td>
+        <td style="color:#a78bfa;font-family:monospace;font-size:0.76rem">false — never cancels</td>
+        <td style="color:#f472b6;font-family:monospace;font-size:0.76rem">false if from/to favorited node<br>true otherwise (acts as CLIENT)</td>
+      </tr>
+      <tr>
+        <td class="attr">On dupe heard: extra action</td>
+        <td class="client-col">—</td>
+        <td class="router-col">—</td>
+        <td style="color:#a78bfa;font-family:monospace;font-size:0.76rem">clampToLateRebroadcastWindow()<br><span style="color:var(--muted);font-size:0.7rem">TX moved to worst-case late: (2×CWmax + 2^CWsize)×slot</span></td>
+        <td style="color:#f472b6;font-family:monospace;font-size:0.76rem">clampToLateRebroadcastWindow()<br><span style="color:var(--muted);font-size:0.7rem">only if packet is from/to favorited node</span></td>
+      </tr>
+      <tr>
+        <td class="attr">Effective relay ordering</td>
+        <td class="client-col">3rd — long delay, cancels on dupe<br><span style="color:var(--muted);font-size:0.7rem">may not relay at all</span></td>
+        <td class="router-col">1st — fires in short window, always</td>
+        <td style="color:#a78bfa;font-family:monospace;font-size:0.76rem">Last — clamped to worst-case late<br><span style="color:var(--muted);font-size:0.7rem">guaranteed to fire after all others</span></td>
+        <td style="color:#f472b6;font-family:monospace;font-size:0.76rem">Last (favorited) / may cancel (others)</td>
+      </tr>
+      <tr>
+        <td class="attr">Broadcasts NodeInfo / Telemetry</td>
         <td class="client-col">YES (standard node)</td>
         <td class="router-col">NO (silent by default)</td>
-      </tr>
-      <tr>
-        <td class="attr">Route learning after ACK</td>
-        <td class="client-col">identical — <span class="tip" data-tip="In-memory + persisted node store (NodeDB class). Holds next-hop routing hints, SNR history, position, and device metadata per node. See src/mesh/NodeDB.h">nodeDB</span>[dest].next_hop updated</td>
-        <td class="router-col">identical — <span class="tip" data-tip="In-memory + persisted node store (NodeDB class). Holds next-hop routing hints, SNR history, position, and device metadata per node. See src/mesh/NodeDB.h">nodeDB</span>[dest].next_hop updated</td>
+        <td style="color:#a78bfa;font-family:monospace;font-size:0.76rem">NO (silent by default)</td>
+        <td style="color:#f472b6;font-family:monospace;font-size:0.76rem">YES (visible in Nodes list)</td>
       </tr>
       <tr>
         <td class="attr">Ideal use case</td>
         <td class="client-col">Mobile / handheld nodes</td>
-        <td class="router-col">Fixed, elevated infrastructure nodes</td>
+        <td class="router-col">Fixed, elevated infrastructure</td>
+        <td style="color:#a78bfa;font-family:monospace;font-size:0.76rem">Secondary/backup relay; bridges terrain gaps; avoids hop waste</td>
+        <td style="color:#f472b6;font-family:monospace;font-size:0.76rem">Attic/roof base station serving weaker indoor nodes (favorited)</td>
       </tr>
       <tr>
         <td class="attr">Key source file</td>
-        <td class="client-col"><span class="tip" data-tip="Broadcast flood relay logic. Maintains a dedup table, computes role-based back-off delay, and cancels queued relays on duplicate receipt. src/mesh/">FloodingRouter.cpp</span><br><span class="tip" data-tip="Extends FloodingRouter. Caches next-hop per destination in nodeDB to skip flooding when a route to the destination is already known. src/mesh/">NextHopRouter.cpp</span></td>
-        <td class="router-col"><span class="tip" data-tip="Radio HAL — TX scheduling, duty-cycle enforcement, and the role-based rebroadcast delay formula (ROUTER vs CLIENT). src/mesh/">RadioInterface.cpp</span>:604<br><span class="tip" data-tip="Broadcast flood relay logic. Maintains a dedup table, computes role-based back-off delay, and cancels queued relays on duplicate receipt. src/mesh/">FloodingRouter.cpp</span>:103</td>
+        <td class="client-col"><span class="tip" data-tip="Broadcast flood relay logic. src/mesh/">FloodingRouter.cpp</span><br><span class="tip" data-tip="Next-hop route caching. src/mesh/">NextHopRouter.cpp</span></td>
+        <td class="router-col"><span class="tip" data-tip="Radio HAL — TX delay formula. src/mesh/">RadioInterface.cpp</span>:604<br><span class="tip" data-tip="Broadcast flood relay logic. src/mesh/">FloodingRouter.cpp</span>:103</td>
+        <td style="color:#a78bfa;font-family:monospace;font-size:0.76rem">FloodingRouter.cpp:129<br>RadioLibInterface.cpp:356</td>
+        <td style="color:#f472b6;font-family:monospace;font-size:0.76rem">FloodingRouter.cpp:110<br>NodeDB.cpp:1953</td>
       </tr>
     </tbody>
   </table>
@@ -879,6 +1056,76 @@ sequenceDiagram
     N1->>App1: fwd N1-N2-N3 snr=[+8,+5] / ret N3-N4-N1 snr=[+3,+11]
 `;
 
+const DIAG_S2RL = `
+sequenceDiagram
+    participant N1 as "Node1 CLIENT"
+    participant N2 as "Node2 ROUTER"
+    participant N3 as "Node3 ROUTER_LATE"
+    participant N4 as "Node4 dest"
+
+    Note over N1: sends DM to N4, hop_limit=3, next_hop=NO_PREF
+    N1->>N2: LoRa TX  to=N4  id=0xDEAD  hop=3  relay=N1
+    N1->>N3: LoRa TX  to=N4  id=0xDEAD  hop=3  relay=N1
+    N1 --x N4: out of radio range
+
+    Note over N2: ROUTER - shouldRebroadcastEarlyLikeRouter=true, short priority delay
+    Note over N3: ROUTER_LATE - CLIENT late delay queued, roleAllowsCancelingDupe=false
+
+    rect rgb(18,48,32)
+        Note over N1,N4: Short ROUTER priority window...
+        N2->>N4: LoRa relay  to=N4  id=0xDEAD  hop=2  relay=N2
+        N2->>N3: LoRa relay  to=N4  id=0xDEAD  hop=2  relay=N2
+    end
+
+    Note over N3: heard dupe from N2 - roleAllowsCancelingDupe=false, no cancelSending!
+    Note over N3: clampToLateRebroadcastWindow called - TX moved to worst-case late
+
+    rect rgb(48,28,60)
+        Note over N1,N4: Worst-case late window - ROUTER_LATE fires last to fill gaps...
+        N3->>N4: LoRa relay  to=N4  id=0xDEAD  hop=2  relay=N3
+    end
+
+    Note over N4: packet covered twice - dedup suppresses 2nd delivery to app
+    N4->>N2: LoRa ACK  to=N1  from=N4  request_id=0xDEAD
+    N2->>N1: LoRa ACK relay  relay=N2
+    Note over N1: ACK rcvd - nodeDB[N4].next_hop=N2, stopRetransmission
+`;
+
+const DIAG_S2CB = `
+sequenceDiagram
+    participant N1 as "Node1 CLIENT (favorited)"
+    participant N2 as "Node2 CLIENT_BASE"
+    participant N3 as "Node3 CLIENT"
+    participant N4 as "Node4 dest"
+
+    Note over N2: nodeDB[N1].is_favorite=true (manually set by user)
+
+    rect rgb(42,16,42)
+        Note over N1,N4: Scenario A - N1 (favorited) sends broadcast
+        N1->>N2: LoRa BCAST  id=0xF001  hop=3  relay=N1
+        N1->>N3: LoRa BCAST  id=0xF001  hop=3  relay=N1
+        Note over N2: isFromOrToFavoritedNode=true - acts like ROUTER_LATE
+        Note over N2: CLIENT late delay, roleAllowsCancelingDupe=false
+        Note over N3: CLIENT - long delay, roleAllowsCancelingDupe=true
+        N3->>N4: LoRa relay  id=0xF001  hop=2  relay=N3
+        N3->>N2: LoRa relay  id=0xF001  hop=2  relay=N3
+        Note over N3: N3 has already relayed - no further action
+        Note over N2: heard dupe - isFromOrToFavorited=true, clampToLateRebroadcastWindow not cancel!
+        N2->>N4: LoRa relay  id=0xF001  hop=2  relay=N2  (worst-case late)
+    end
+
+    rect rgb(22,22,42)
+        Note over N1,N4: Scenario B - non-favorited node sends broadcast
+        N3->>N2: LoRa BCAST  id=0xF002  hop=3  relay=N3
+        N3->>N4: LoRa BCAST  id=0xF002  hop=3  relay=N3
+        Note over N2: isFromOrToFavoritedNode=false - acts like CLIENT
+        Note over N2: CLIENT late delay, roleAllowsCancelingDupe=true
+        N3->>N2: LoRa relay  id=0xF002  hop=2  relay=N3
+        Note over N2: heard dupe - cancelSending called, relay cancelled
+        Note over N2: airtime saved for non-priority traffic
+    end
+`;
+
 // ── Mermaid init ───────────────────────────────────────────────────────────
 mermaid.initialize({
   startOnLoad: false,
@@ -927,10 +1174,12 @@ mermaid.initialize({
 
 // ── Render ─────────────────────────────────────────────────────────────────
 const diagrams = {
-  's1':  { el: 'diag-s1',  src: DIAG_S1  },
-  's2c': { el: 'diag-s2c', src: DIAG_S2C },
-  's2r': { el: 'diag-s2r', src: DIAG_S2R },
-  's3':  { el: 'diag-s3',  src: DIAG_S3  },
+  's1':   { el: 'diag-s1',   src: DIAG_S1   },
+  's2c':  { el: 'diag-s2c',  src: DIAG_S2C  },
+  's2r':  { el: 'diag-s2r',  src: DIAG_S2R  },
+  's3':   { el: 'diag-s3',   src: DIAG_S3   },
+  's2rl': { el: 'diag-s2rl', src: DIAG_S2RL },
+  's2cb': { el: 'diag-s2cb', src: DIAG_S2CB },
 };
 const rendered = {};
 
@@ -963,7 +1212,7 @@ async function renderDiagram(key) {
 }
 
 // ── Tabs ───────────────────────────────────────────────────────────────────
-const tabPanelMap = { s1: 'panel-s1', s2c: 'panel-s2c', s2r: 'panel-s2r', s3: 'panel-s3' };
+const tabPanelMap = { s1: 'panel-s1', s2c: 'panel-s2c', s2r: 'panel-s2r', s3: 'panel-s3', s2rl: 'panel-s2rl', s2cb: 'panel-s2cb' };
 
 function switchTab(key) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -983,6 +1232,8 @@ document.addEventListener('DOMContentLoaded', () => {
   renderDiagram('s2c');
   renderDiagram('s2r');
   renderDiagram('s3');
+  renderDiagram('s2rl');
+  renderDiagram('s2cb');
 });
 </script>
 
