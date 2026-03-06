@@ -27,18 +27,37 @@
 <!-- ===================== SLIDE 2: AGENDA ===================== -->
 <section>
   <h2 data-i18n="slide2_heading">Agenda</h2>
-  <ol style="font-size:0.9em; line-height:2">
-    <li><a class="agenda-link" href="#/the-problem"><span data-i18n="slide2_item1">The Problem &mdash; why off-grid communication matters</span></a></li>
-    <li><a class="agenda-link" href="#/what-is-meshtastic"><span data-i18n="slide2_item2">What is Meshtastic?</span></a></li>
-    <li><a class="agenda-link" href="#/lora-technology"><span data-i18n="slide2_item3">LoRa Technology primer</span></a></li>
-    <li><a class="agenda-link" href="#/how-mesh-works"><span data-i18n="slide2_item4">How mesh networking works</span></a></li>
-    <li><a class="agenda-link" href="#/protocol-architecture"><span data-i18n="slide2_item5">Protocol architecture &amp; routing</span></a></li>
-    <li><a class="agenda-link" href="#/encryption"><span data-i18n="slide2_item6">Encryption &amp; security</span></a></li>
-    <li><a class="agenda-link" href="#/hardware-ecosystem"><span data-i18n="slide2_item7">Hardware ecosystem</span></a></li>
-    <li><a class="agenda-link" href="#/software-ecosystem"><span data-i18n="slide2_item8">Software ecosystem &mdash; firmware, apps, web</span></a></li>
-    <li><a class="agenda-link" href="#/range-records"><span data-i18n="slide2_item9">Use cases &amp; range records</span></a></li>
-    <li><a class="agenda-link" href="#/getting-started"><span data-i18n="slide2_item10">Getting started &amp; resources</span></a></li>
-  </ol>
+  <div class="two-col" style="gap:3em; align-items:start">
+    <div>
+      <h3 data-i18n="slide2_col1_heading">Overview</h3>
+      <ol style="font-size:0.8em; line-height:1.85">
+        <li><a class="agenda-link" href="#/the-problem"><span data-i18n="slide2_item1">The Problem &mdash; why off-grid communication matters</span></a></li>
+        <li><a class="agenda-link" href="#/what-is-meshtastic"><span data-i18n="slide2_item2">What is Meshtastic?</span></a></li>
+        <li><a class="agenda-link" href="#/lora-technology"><span data-i18n="slide2_item3">LoRa Technology primer</span></a></li>
+        <li><a class="agenda-link" href="#/how-mesh-works"><span data-i18n="slide2_item4">How mesh networking works</span></a></li>
+        <li><a class="agenda-link" href="#/protocol-architecture"><span data-i18n="slide2_item5">Protocol architecture &amp; routing</span></a></li>
+        <li><a class="agenda-link" href="#/encryption"><span data-i18n="slide2_item6">Encryption &amp; security</span></a></li>
+        <li><a class="agenda-link" href="#/hardware-ecosystem"><span data-i18n="slide2_item7">Hardware ecosystem</span></a></li>
+        <li><a class="agenda-link" href="#/software-ecosystem"><span data-i18n="slide2_item8">Software ecosystem &mdash; firmware, apps, web</span></a></li>
+        <li><a class="agenda-link" href="#/range-records"><span data-i18n="slide2_item9">Use cases &amp; range records</span></a></li>
+        <li><a class="agenda-link" href="#/getting-started"><span data-i18n="slide2_item10">Getting started &amp; resources</span></a></li>
+      </ol>
+    </div>
+    <div>
+      <h3 data-i18n="slide2_col2_heading" style="color:#6ea8fe">Firmware Deep Dive</h3>
+      <ol style="font-size:0.8em; line-height:1.85">
+        <li><a class="agenda-link agenda-link--fw" href="#/firmware-deep-dive"><span data-i18n="slide2_fw1">Firmware architecture &mdash; intro</span></a></li>
+        <li><a class="agenda-link agenda-link--fw" href="#/codebase-map"><span data-i18n="slide2_fw2">Codebase map</span></a></li>
+        <li><a class="agenda-link agenda-link--fw" href="#/build-system"><span data-i18n="slide2_fw3">Build system &amp; hardware variants</span></a></li>
+        <li><a class="agenda-link agenda-link--fw" href="#/init-sequence"><span data-i18n="slide2_fw4">Startup &amp; init sequence</span></a></li>
+        <li><a class="agenda-link agenda-link--fw" href="#/router-hierarchy"><span data-i18n="slide2_fw5">Router hierarchy</span></a></li>
+        <li><a class="agenda-link agenda-link--fw" href="#/module-system"><span data-i18n="slide2_fw6">Module / plugin system</span></a></li>
+        <li><a class="agenda-link agenda-link--fw" href="#/platform-hal"><span data-i18n="slide2_fw7">Platform HAL</span></a></li>
+        <li><a class="agenda-link agenda-link--fw" href="#/data-structures"><span data-i18n="slide2_fw8">Key data structures</span></a></li>
+        <li><a class="agenda-link agenda-link--fw" href="#/where-to-start"><span data-i18n="slide2_fw9">Where to start</span></a></li>
+      </ol>
+    </div>
+  </div>
 </section>
 
 <!-- ===================== SLIDE 3: THE PROBLEM ===================== -->
@@ -965,7 +984,7 @@
 </section>
 
 <!-- ===================== SECTION DIVIDER: FIRMWARE DEEP DIVE ===================== -->
-<section class="center" data-background-color="#0d1b2a">
+<section id="firmware-deep-dive" class="center" data-background-color="#0d1b2a">
   <h2 data-i18n="fw_divider_heading">Firmware Architecture</h2>
   <h3 class="dim" data-i18n="fw_divider_sub">Deep Dive</h3>
   <br>
@@ -975,7 +994,7 @@
 </section>
 
 <!-- ===================== SLIDE 28: CODEBASE MAP ===================== -->
-<section>
+<section id="codebase-map">
   <h2 data-i18n="slide28_heading">Codebase Map</h2>
   <div class="two-col" style="gap:2em">
     <div>
@@ -1011,7 +1030,7 @@
 </section>
 
 <!-- ===================== SLIDE 29: BUILD SYSTEM & HARDWARE ===================== -->
-<section>
+<section id="build-system">
   <h2 data-i18n="slide29_heading">Build System &amp; Hardware</h2>
   <div class="two-col" style="gap:2em">
     <div>
@@ -1053,7 +1072,7 @@ pio test -e native      # unit tests</code></pre>
 </section>
 
 <!-- ===================== SLIDE 30: INIT SEQUENCE ===================== -->
-<section>
+<section id="init-sequence">
   <h2 data-i18n="slide30_heading">Startup &amp; Init Sequence</h2>
   <br>
   <div class="two-col" style="gap:3em">
@@ -1106,7 +1125,7 @@ pio test -e native      # unit tests</code></pre>
 </section>
 
 <!-- ===================== SLIDE 31: ROUTER HIERARCHY ===================== -->
-<section>
+<section id="router-hierarchy">
   <h2 data-i18n="slide31_heading">Router Hierarchy</h2>
   <div class="two-col" style="gap:2em">
     <div>
@@ -1140,7 +1159,7 @@ pio test -e native      # unit tests</code></pre>
 </section>
 
 <!-- ===================== SLIDE 32: MODULE / PLUGIN SYSTEM ===================== -->
-<section>
+<section id="module-system">
   <h2 data-i18n="slide32_heading">Module / Plugin System</h2>
   <div class="two-col" style="gap:2em">
     <div>
@@ -1180,7 +1199,7 @@ pio test -e native      # unit tests</code></pre>
 </section>
 
 <!-- ===================== SLIDE 33: PLATFORM HAL ===================== -->
-<section>
+<section id="platform-hal">
   <h2 data-i18n="slide33_heading">Platform HAL</h2>
   <div class="two-col" style="gap:2em">
     <div>
@@ -1214,7 +1233,7 @@ pio test -e native      # unit tests</code></pre>
 </section>
 
 <!-- ===================== SLIDE 34: KEY DATA STRUCTURES ===================== -->
-<section>
+<section id="data-structures">
   <h2 data-i18n="slide34_heading">Key Data Structures</h2>
   <div class="two-col" style="gap:2em">
     <div>
@@ -1253,7 +1272,7 @@ pio test -e native      # unit tests</code></pre>
 </section>
 
 <!-- ===================== SLIDE 35: WHERE TO START ===================== -->
-<section>
+<section id="where-to-start">
   <h2 data-i18n="slide35_heading">Where to Start</h2>
   <br>
   <div class="three-col">

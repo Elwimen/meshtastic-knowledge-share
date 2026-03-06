@@ -16,6 +16,17 @@ const MESHTASTIC_LANG = {
 
   // Slide 2
   slide2_heading: { en: "Agenda", hr: "Dnevni red" },
+  slide2_col1_heading: { en: "Overview", hr: "Pregled" },
+  slide2_col2_heading: { en: "Firmware Deep Dive", hr: "Firmware \u2014 dubinski pregled" },
+  slide2_fw1: { en: "Firmware architecture \u2014 intro", hr: "Arhitektura firmwarea \u2014 uvod" },
+  slide2_fw2: { en: "Codebase map", hr: "Karta koda" },
+  slide2_fw3: { en: "Build system &amp; hardware variants", hr: "Build sustav i varijante hardvera" },
+  slide2_fw4: { en: "Startup &amp; init sequence", hr: "Redoslijed pokretanja i inicijalizacije" },
+  slide2_fw5: { en: "Router hierarchy", hr: "Hijerarhija usmjeriva\u010da" },
+  slide2_fw6: { en: "Module / plugin system", hr: "Modul / plugin sustav" },
+  slide2_fw7: { en: "Platform HAL", hr: "Platformski HAL" },
+  slide2_fw8: { en: "Key data structures", hr: "Klju\u010dne strukture podataka" },
+  slide2_fw9: { en: "Where to start", hr: "Gdje po\u010deti" },
   slide2_item1: {
     en: "The Problem &mdash; why off-grid communication matters",
     hr: "Problem &mdash; za\u0161to je komunikacija izvan mre\u017ee va\u017ena"

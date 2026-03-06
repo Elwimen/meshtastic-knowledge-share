@@ -200,6 +200,10 @@
   color: var(--mesh-green);
   border-bottom-color: rgba(103, 234, 148, 0.5);
 }
+.reveal .agenda-link--fw:hover {
+  color: #6ea8fe;
+  border-bottom-color: rgba(110, 168, 254, 0.5);
+}
 
 /* Firmware deep-dive tooltips */
 .reveal .fw-tip {
