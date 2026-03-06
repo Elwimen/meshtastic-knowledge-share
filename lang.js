@@ -99,7 +99,7 @@ const MESHTASTIC_LANG = {
     en: '<span class="highlight">Lo</span>ng <span class="highlight">Ra</span>nge radio modulation technique',
     hr: '<span class="highlight">Lo</span>ng <span class="highlight">Ra</span>nge &mdash; tehnika modulacije dugog dometa'
   },
-  slide5_lora2: { en: "Developed by Semtech (patented chirp spread spectrum)", hr: "Razvio Semtech (patentirani chirp spread spectrum)" },
+  slide5_lora2: { en: 'Developed by Semtech (patented <span class="tip" data-tip="Modulation where data is encoded on frequency-swept pulses (chirps). Highly resistant to interference and multipath fading; each +1 SF step doubles chirp duration.">chirp spread spectrum</span>)', hr: 'Razvio Semtech (patentirani <span class="tip" data-tip="Modulacija gdje se podaci kodiraju na frekvencijski pometenim impulsima (chirpovima). Otporan na smetnje; svaki +1 SF korak udvostručuje trajanje chirpa.">chirp spread spectrum</span>)' },
   slide5_lora3: { en: "Sub-GHz ISM bands (license-free)", hr: "Sub-GHz ISM pojasevi (bez licence)" },
   slide5_lora4: { en: "Extreme range vs. WiFi/Bluetooth", hr: "Ekstreman domet u usporedbi s WiFi/Bluetooth" },
   slide5_lora5: { en: "Very low power consumption", hr: "Vrlo niska potro\u0161nja energije" },
@@ -109,20 +109,20 @@ const MESHTASTIC_LANG = {
   },
   slide5_col2_heading: { en: "Key Parameters", hr: "Klju\u010dni parametri" },
   slide5_sf: {
-    en: '<span class="highlight">Spreading Factor (SF)</span> &mdash; 7-12<br><span class="dim">Higher = longer range, slower speed</span>',
-    hr: '<span class="highlight">Spreading Factor (SF)</span> &mdash; 7-12<br><span class="dim">Ve\u0107i = ve\u0107i domet, sporija brzina</span>'
+    en: '<span class="highlight tip" data-tip="Controls chirp symbol duration. Each +1 step doubles airtime but gains ~2.5 dB link budget. SF7 = fastest & shortest range; SF12 = slowest & longest range.">Spreading Factor (SF)</span> &mdash; 7-12<br><span class="dim">Higher = longer range, slower speed</span>',
+    hr: '<span class="highlight tip" data-tip="Controls chirp symbol duration. Each +1 step doubles airtime but gains ~2.5 dB link budget. SF7 = fastest & shortest range; SF12 = slowest & longest range.">Spreading Factor (SF)</span> &mdash; 7-12<br><span class="dim">Ve\u0107i = ve\u0107i domet, sporija brzina</span>'
   },
   slide5_bw: {
-    en: '<span class="highlight">Bandwidth</span> &mdash; 125-500 kHz<br><span class="dim">Wider = faster but less range</span>',
-    hr: '<span class="highlight">Bandwidth (BW)</span> &mdash; 125-500 kHz<br><span class="dim">\u0160iri = br\u017ee ali manji domet</span>'
+    en: '<span class="highlight tip" data-tip="RF channel width in kHz. Wider = higher data rate but lower receiver sensitivity (less range). Common values: 125 / 250 / 500 kHz.">Bandwidth</span> &mdash; 125-500 kHz<br><span class="dim">Wider = faster but less range</span>',
+    hr: '<span class="highlight tip" data-tip="RF channel width in kHz. Wider = higher data rate but lower receiver sensitivity (less range). Common values: 125 / 250 / 500 kHz.">Bandwidth (BW)</span> &mdash; 125-500 kHz<br><span class="dim">\u0160iri = br\u017ee ali manji domet</span>'
   },
   slide5_cr: {
-    en: '<span class="highlight">Coding Rate</span> &mdash; 4/5 to 4/8<br><span class="dim">Higher = more error correction</span>',
-    hr: '<span class="highlight">Coding Rate (CR)</span> &mdash; 4/5 do 4/8<br><span class="dim">Ve\u0107i = vi\u0161e korekcije pogre\u0161aka</span>'
+    en: '<span class="highlight tip" data-tip="Forward error-correction ratio: data bits / total bits. 4/5 = minimal overhead; 4/8 = maximum redundancy. Higher CR improves reliability on noisy links at the cost of airtime.">Coding Rate</span> &mdash; 4/5 to 4/8<br><span class="dim">Higher = more error correction</span>',
+    hr: '<span class="highlight tip" data-tip="Forward error-correction ratio: data bits / total bits. 4/5 = minimal overhead; 4/8 = maximum redundancy. Higher CR improves reliability on noisy links at the cost of airtime.">Coding Rate (CR)</span> &mdash; 4/5 do 4/8<br><span class="dim">Ve\u0107i = vi\u0161e korekcije pogre\u0161aka</span>'
   },
   slide5_tx: {
-    en: '<span class="highlight">TX Power</span> &mdash; up to +30 dBm<br><span class="dim">Region-dependent limits</span>',
-    hr: '<span class="highlight">TX snaga</span> &mdash; do +30 dBm<br><span class="dim">Ovisi o regiji</span>'
+    en: '<span class="highlight tip" data-tip="Transmit power in dBm. Legal limits by region: EU 868 MHz max +14 dBm ERP; US 915 MHz max +30 dBm EIRP. Higher power = more range but faster battery drain.">TX Power</span> &mdash; up to +30 dBm<br><span class="dim">Region-dependent limits</span>',
+    hr: '<span class="highlight tip" data-tip="Transmit power in dBm. Legal limits by region: EU 868 MHz max +14 dBm ERP; US 915 MHz max +30 dBm EIRP. Higher power = more range but faster battery drain.">TX snaga</span> &mdash; do +30 dBm<br><span class="dim">Ovisi o regiji</span>'
   },
 
   // Slide 6
@@ -194,10 +194,10 @@ const MESHTASTIC_LANG = {
   slide9_tag3: { en: "3. Radio broadcasts (LoRa)", hr: "3. Radio emitira (LoRa)" },
   slide9_tag4: { en: "4. Neighbors rebroadcast", hr: "4. Susjedi ponovno emitiraju" },
   slide9_tag5: { en: "5. Target receives &amp; decrypts", hr: "5. Cilj prima i dekriptira" },
-  slide9_card1_heading: { en: "Managed Flooding", hr: "Upravljano poplavljivanje" },
+  slide9_card1_heading: { en: '<span class="tip" data-tip="Every node rebroadcasts each packet at most once, using a randomised delay. No routing tables needed; scales poorly above ~25 active nodes on a channel.">Managed Flooding</span>', hr: '<span class="tip" data-tip="Svaki čvor ponovno emitira svaki paket najviše jednom, s nasumičnim kašnjenjem. Ne treba tablice usmjeravanja; slabo skalira iznad ~25 aktivnih čvorova.">Upravljano poplavljivanje</span>' },
   slide9_flood1: { en: "Before rebroadcasting, node listens briefly", hr: "Prije ponovnog emitiranja, \u010dvor kratko slu\u0161a" },
   slide9_flood2: { en: "If another node already rebroadcasted &mdash; skip", hr: "Ako je drugi \u010dvor ve\u0107 ponovno emitirao &mdash; presko\u010di" },
-  slide9_flood3: { en: "SNR-based contention: farther nodes get priority", hr: "Natjecanje temeljeno na SNR-u: dalji \u010dvorovi imaju prioritet" },
+  slide9_flood3: { en: '<span class="tip" data-tip="Signal-to-Noise Ratio — dB difference between signal power and background noise. LoRa can decode at negative SNR (e.g. −20 dB at SF12), giving it extreme range vs WiFi.">SNR</span>-based contention: farther nodes get priority', hr: '<span class="tip" data-tip="Omjer signal-šum — razlika u dB između snage signala i šuma pozadine. LoRa može dekodirati pri negativnom SNR-u (npr. −20 dB na SF12).">SNR</span>-based natjecanje: dalji čvorovi imaju prioritet' },
   slide9_flood4: { en: "Router/Repeater roles have higher priority", hr: "Router/Repeater uloge imaju vi\u0161i prioritet" },
   slide9_card2_heading: { en: "Next-Hop Routing (v2.6+)", hr: "Next-Hop usmjeravanje (v2.6+)" },
   slide9_nexthop1: { en: "First message uses managed flooding", hr: "Prva poruka koristi upravljano poplavljivanje" },
@@ -244,17 +244,17 @@ const MESHTASTIC_LANG = {
   slide12_heading: { en: "Encryption &amp; Security", hr: "Enkripcija i sigurnost" },
   slide12_col1_heading: { en: "Channel Messages", hr: "Poruke na kanalu" },
   slide12_ch1: {
-    en: '<span class="highlight">AES256-CTR</span> symmetric encryption',
-    hr: '<span class="highlight">AES256-CTR</span> simetri\u010dna enkripcija'
+    en: '<span class="highlight tip" data-tip="Symmetric stream cipher. 256-bit key in Counter (CTR) mode. Key = 32-byte channel PSK. Quantum-resistant; nonce = packet_id + from_node prevents IV reuse.">AES256-CTR</span> symmetric encryption',
+    hr: '<span class="highlight tip" data-tip="Symmetric stream cipher. 256-bit key in Counter (CTR) mode. Key = 32-byte channel PSK. Quantum-resistant; nonce = packet_id + from_node prevents IV reuse.">AES256-CTR</span> simetri\u010dna enkripcija'
   },
-  slide12_ch2: { en: "Pre-Shared Key (PSK) per channel", hr: "Unaprijed dijeljeni klju\u010d (PSK) po kanalu" },
+  slide12_ch2: { en: 'Pre-Shared Key (<span class="tip" data-tip="A symmetric secret distributed out-of-band (e.g. via QR code) to all channel members. Anyone with the PSK can encrypt and decrypt — there is no per-user identity.">PSK</span>) per channel', hr: 'Unaprijed dijeljeni ključ (<span class="tip" data-tip="Simetrična tajna distribuirana izvan pojasa (npr. QR kodom) svim članovima kanala. Tko god ima PSK može enkriptirati i dekriptirati.">PSK</span>) po kanalu' },
   slide12_ch3: { en: "Anyone with the key can read &amp; send", hr: "Tko god ima klju\u010d mo\u017ee \u010ditati i slati" },
   slide12_ch4: { en: 'Default key is public: <code>"AQ=="</code>', hr: 'Zadani klju\u010d je javan: <code>"AQ=="</code>' },
   slide12_ch5: { en: "Up to 8 channels per device", hr: "Do 8 kanala po ure\u0111aju" },
   slide12_dm_heading: { en: "Direct Messages (v2.5+)", hr: "Izravne poruke (v2.5+)" },
   slide12_dm1: {
-    en: '<span class="highlight">x25519</span> public key cryptography',
-    hr: '<span class="highlight">x25519</span> kriptografija javnog klju\u010da'
+    en: '<span class="highlight tip" data-tip="Elliptic-curve Diffie-Hellman on Curve25519. Each node has a key pair; DMs derive an ephemeral shared secret from sender private key + recipient public key. 32-byte keys. Not quantum-resistant.">x25519</span> public key cryptography',
+    hr: '<span class="highlight tip" data-tip="Elliptic-curve Diffie-Hellman on Curve25519. Each node has a key pair; DMs derive an ephemeral shared secret from sender private key + recipient public key. 32-byte keys. Not quantum-resistant.">x25519</span> kriptografija javnog klju\u010da'
   },
   slide12_dm2: { en: "Each node has unique key pair", hr: "Svaki \u010dvor ima jedinstveni par klju\u010deva" },
   slide12_dm3: { en: "Encrypted with recipient\u2019s public key", hr: "Enkriptirano javnim klju\u010dem primatelja" },
@@ -400,8 +400,8 @@ const MESHTASTIC_LANG = {
     en: 'interval &times; (1.0 + (nodes - 40) &times; 0.075)',
     hr: 'interval &times; (1,0 + (\u010dvorovi - 40) &times; 0,075)'
   },
-  slide18_col2_heading: { en: "CSMA/CA", hr: "CSMA/CA" },
-  slide18_csma1: { en: "Channel Activity Detection (CAD) before TX", hr: "Detekcija aktivnosti kanala (CAD) prije slanja" },
+  slide18_col2_heading: { en: '<span class="tip" data-tip="Carrier Sense Multiple Access / Collision Avoidance. Before transmitting, a node checks the channel is idle, then waits a random backoff window to reduce simultaneous transmissions.">CSMA/CA</span>', hr: '<span class="tip" data-tip="Višestruki pristup s detekcijom nositelja / izbjegavanjem sudara. Čvor provjeri je li kanal slobodan pa čeka nasumično kašnjenje kako bi smanjio istovremene odašiljanja.">CSMA/CA</span>' },
+  slide18_csma1: { en: '<span class="tip" data-tip="Channel Activity Detection — a fast LoRa hardware scan (~1 ms) that checks for a preamble on air before committing to transmit or receive. Much faster than a full packet listen.">CAD</span> (Channel Activity Detection) before TX', hr: '<span class="tip" data-tip="Detekcija aktivnosti kanala — brzo LoRa hardversko skeniranje (~1 ms) koje provjerava postoji li preambula u zraku prije slanja.">CAD</span> (detekcija aktivnosti kanala) prije slanja' },
   slide18_csma2: { en: "If channel busy &rarr; random backoff", hr: "Ako je kanal zauzet &rarr; nasumi\u010dno \u010dekanje" },
   slide18_csma3: { en: "Contention window scales with utilization", hr: "Prozor natjecanja skalira se s iskoristivosti" },
   slide18_limits_heading: { en: "Practical Limits", hr: "Prakti\u010dna ograni\u010denja" },
@@ -459,7 +459,7 @@ const MESHTASTIC_LANG = {
   slide21_mod2: { en: '<span class="highlight">Position Sharing</span> &mdash; GPS with smart broadcast', hr: '<span class="highlight">Dijeljenje pozicije</span> &mdash; GPS s pametnim emitiranjem' },
   slide21_mod3: { en: '<span class="highlight">Telemetry</span> &mdash; battery, voltage, temp, humidity', hr: '<span class="highlight">Telemetrija</span> &mdash; baterija, napon, temperatura, vlaga' },
   slide21_mod4: { en: '<span class="highlight">Range Test</span> &mdash; automated signal testing', hr: '<span class="highlight">Test dosega</span> &mdash; automatizirano testiranje signala' },
-  slide21_mod5: { en: '<span class="highlight">Store &amp; Forward</span> &mdash; buffer msgs for offline nodes', hr: '<span class="highlight">Pohrani i proslijedi</span> &mdash; me\u0111uspremnik za offline \u010dvorove' },
+  slide21_mod5: { en: '<span class="highlight tip" data-tip="Router nodes buffer messages for clients that were offline. When the client reconnects, the router replays missed packets. Requires a node with extra RAM (e.g. ESP32).">Store &amp; Forward</span> &mdash; buffer msgs for offline nodes', hr: '<span class="highlight tip" data-tip="Router čvorovi međuspremaju poruke za klijente koji su bili offline. Kad se klijent spoji, router reproducira propuštene pakete. Zahtijeva čvor s više RAM-a (npr. ESP32).">Pohrani i proslijedi</span> &mdash; međuspremnik za offline čvorove' },
   slide21_mod6: { en: '<span class="highlight">Serial Module</span> &mdash; UART bridge', hr: '<span class="highlight">Serijski modul</span> &mdash; UART most' },
   slide21_mod7: { en: '<span class="highlight">MQTT Gateway</span> &mdash; bridge to internet', hr: '<span class="highlight">MQTT pristupnik</span> &mdash; most prema internetu' },
   slide21_mod8: { en: '<span class="highlight">Neighbor Info</span> &mdash; mesh topology', hr: '<span class="highlight">Info o susjedima</span> &mdash; topologija mre\u017ee' },
@@ -471,7 +471,7 @@ const MESHTASTIC_LANG = {
   },
 
   // Slide 22
-  slide22_heading: { en: "MQTT Bridge &mdash; Connecting to the Internet", hr: "MQTT most &mdash; povezivanje s internetom" },
+  slide22_heading: { en: '<span class="tip" data-tip="Message Queuing Telemetry Transport — lightweight pub/sub protocol over TCP. A gateway node forwards LoRa packets to an MQTT broker, making them available to any internet-connected subscriber.">MQTT</span> Bridge &mdash; Connecting to the Internet', hr: '<span class="tip" data-tip="Laki pub/sub protokol za razmjenu poruka preko TCP-a. Gateway čvor prosljeđuje LoRa pakete MQTT brokeru, dostupnom svim pretplatnicima s internetom.">MQTT</span> most &mdash; povezivanje s internetom' },
   slide22_bullet1: { en: "Bridge local LoRa mesh to the internet via MQTT protocol", hr: "Premosti lokalnu LoRa mesh mre\u017eu na internet putem MQTT protokola" },
   slide22_bullet2: { en: "Connect separate meshes across the world", hr: "Pove\u017ei odvojene mesh mre\u017ee diljem svijeta" },
   slide22_bullet3: {

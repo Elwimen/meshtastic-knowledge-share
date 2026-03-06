@@ -146,13 +146,13 @@
     <div>
       <h3 data-i18n="slide5_col2_heading">Key Parameters</h3>
       <ul style="font-size:0.8em">
-        <li data-i18n="slide5_sf"><span class="highlight">Spreading Factor (SF)</span> &mdash; 7-12<br>
+        <li data-i18n="slide5_sf"><span class="highlight tip" data-tip="Controls chirp symbol duration. Each +1 step doubles airtime but gains ~2.5 dB link budget. SF7 = fastest &amp; shortest range; SF12 = slowest &amp; longest range.">Spreading Factor (SF)</span> &mdash; 7-12<br>
           <span class="dim">Higher = longer range, slower speed</span></li>
-        <li data-i18n="slide5_bw"><span class="highlight">Bandwidth</span> &mdash; 125-500 kHz<br>
+        <li data-i18n="slide5_bw"><span class="highlight tip" data-tip="RF channel width in kHz. Wider bandwidth = higher data rate but lower receiver sensitivity (less range). Common values: 125 / 250 / 500 kHz.">Bandwidth</span> &mdash; 125-500 kHz<br>
           <span class="dim">Wider = faster but less range</span></li>
-        <li data-i18n="slide5_cr"><span class="highlight">Coding Rate</span> &mdash; 4/5 to 4/8<br>
+        <li data-i18n="slide5_cr"><span class="highlight tip" data-tip="Forward error-correction ratio expressed as data bits / total bits. 4/5 = minimal overhead; 4/8 = maximum redundancy. Higher CR improves noisy-link reliability at the cost of airtime.">Coding Rate</span> &mdash; 4/5 to 4/8<br>
           <span class="dim">Higher = more error correction</span></li>
-        <li data-i18n="slide5_tx"><span class="highlight">TX Power</span> &mdash; up to +30 dBm<br>
+        <li data-i18n="slide5_tx"><span class="highlight tip" data-tip="Transmit power in dBm. Legal limits vary by region: EU 868 MHz ≤ +14 dBm ERP; US 915 MHz ≤ +30 dBm EIRP. Higher power increases range but drains battery faster.">TX Power</span> &mdash; up to +30 dBm<br>
           <span class="dim">Region-dependent limits</span></li>
       </ul>
     </div>
@@ -430,7 +430,7 @@
     <div>
       <h3 data-i18n="slide12_col1_heading">Channel Messages</h3>
       <ul style="font-size:0.75em">
-        <li data-i18n="slide12_ch1"><span class="highlight">AES256-CTR</span> symmetric encryption</li>
+        <li data-i18n="slide12_ch1"><span class="highlight tip" data-tip="Symmetric stream cipher. 256-bit key in Counter (CTR) mode — keystream XORed with plaintext. Key = 32-byte channel PSK. Quantum-resistant; no IV reuse risk due to per-packet nonce.">AES256-CTR</span> symmetric encryption</li>
         <li data-i18n="slide12_ch2">Pre-Shared Key (PSK) per channel</li>
         <li data-i18n="slide12_ch3">Anyone with the key can read &amp; send</li>
         <li data-i18n="slide12_ch4">Default key is public: <code>"AQ=="</code></li>
@@ -439,7 +439,7 @@
       <br>
       <h3 data-i18n="slide12_dm_heading">Direct Messages (v2.5+)</h3>
       <ul style="font-size:0.75em">
-        <li data-i18n="slide12_dm1"><span class="highlight">x25519</span> public key cryptography</li>
+        <li data-i18n="slide12_dm1"><span class="highlight tip" data-tip="Elliptic-curve Diffie-Hellman on Curve25519. Each node has a key pair; DMs derive an ephemeral shared secret from sender's private key + recipient's public key. Fast, compact (32-byte keys). Not quantum-resistant.">x25519</span> public key cryptography</li>
         <li data-i18n="slide12_dm2">Each node has unique key pair</li>
         <li data-i18n="slide12_dm3">Encrypted with recipient's public key</li>
         <li data-i18n="slide12_dm4">Signed with sender's private key</li>
@@ -476,9 +476,9 @@
       <tr>
         <th data-i18n="slide13_th_preset">Preset</th>
         <th data-i18n="slide13_th_data">Data Rate</th>
-        <th>SF</th>
-        <th>BW</th>
-        <th>CR</th>
+        <th><span class="tip" data-tip="Spreading Factor — higher = longer range, slower data rate">SF</span></th>
+        <th><span class="tip" data-tip="Bandwidth — wider = faster but less range">BW</span></th>
+        <th><span class="tip" data-tip="Coding Rate — e.g. 4/5 minimal overhead, 4/8 max error correction">CR</span></th>
         <th>Link Budget</th>
         <th data-i18n="slide13_th_usecase">Use Case</th>
       </tr>

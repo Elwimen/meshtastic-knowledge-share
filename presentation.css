@@ -240,6 +240,37 @@
   opacity: 1;
 }
 
+/* General tooltips — fixed to screen centre, never clipped */
+.reveal .tip {
+  cursor: help;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.3);
+  position: relative;
+}
+.reveal .tip::after {
+  content: attr(data-tip);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: max-content;
+  max-width: 320px;
+  background: #0d1b2a;
+  border: 1px solid rgba(103, 232, 249, 0.35);
+  color: #ccc;
+  font-size: 0.85em;
+  font-weight: 400;
+  line-height: 1.5;
+  padding: 0.7em 1em;
+  border-radius: 8px;
+  white-space: normal;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 9999;
+}
+.reveal .tip:hover::after { opacity: 1; }
+
 /* Language menu */
 #lang-menu {
   position: fixed;
