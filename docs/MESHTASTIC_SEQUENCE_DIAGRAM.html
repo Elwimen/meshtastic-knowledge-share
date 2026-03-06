@@ -48,7 +48,7 @@
 
     /* ── topology banner ── */
     .topology {
-      max-width: 760px;
+      max-width: 80vw;
       margin: 0 auto 28px;
       background: var(--surface);
       border: 1px solid var(--border);
@@ -97,7 +97,7 @@
 
     /* ── tabs ── */
     .tab-bar {
-      max-width: 980px;
+      max-width: 80vw;
       margin: 0 auto 0;
       display: flex;
       gap: 4px;
@@ -123,7 +123,7 @@
     .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 
     /* ── panels ── */
-    .panel { display: none; max-width: 980px; margin: 0 auto; padding-top: 24px; }
+    .panel { display: none; width: 80vw; max-width: 80vw; margin: 0 auto; padding-top: 24px; }
     .panel.active { display: block; }
 
     /* ── diagram card ── */
@@ -182,7 +182,7 @@
     /* ── facts grid ── */
     .facts-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       margin-bottom: 16px;
     }
@@ -280,7 +280,7 @@
 
     /* ── comparison table ── */
     .comparison {
-      max-width: 980px;
+      max-width: 80vw;
       margin: 32px auto 0;
       background: var(--surface);
       border: 1px solid var(--border);
