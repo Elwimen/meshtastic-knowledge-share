@@ -189,6 +189,18 @@
   }
 }
 
+/* Agenda links */
+.reveal .agenda-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.reveal .agenda-link:hover {
+  color: var(--mesh-green);
+  border-bottom-color: rgba(103, 234, 148, 0.5);
+}
+
 /* Firmware deep-dive tooltips */
 .reveal .fw-tip {
   color: var(--mesh-green);
